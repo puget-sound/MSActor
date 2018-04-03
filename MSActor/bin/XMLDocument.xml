@@ -499,7 +499,7 @@
             <param name="user"></param>
             <returns></returns>
         </member>
-        <member name="M:MSActor.Controllers.ADController.ChangeUserSurnameDriver(System.String,System.String)">
+        <member name="M:MSActor.Controllers.ADController.ChangeUserValueDriver(System.String,System.String,System.String)">
             <summary>
             This method changes the surname of a user in AD. 
             </summary>
@@ -524,7 +524,7 @@
             This is a method for creating new users in AD. Calls a driver method in the ADController. 
             </summary>
         </member>
-        <member name="M:MSActor.Controllers.MSActorController.ChangeUserSurname(MSActor.Models.ChangeUserValueJsonModel)">
+        <member name="M:MSActor.Controllers.MSActorController.ChangeUserValue(MSActor.Models.ChangeUserValueJsonModel)">
             <summary>
             This method changes the surname of a user in AD. 
             </summary>

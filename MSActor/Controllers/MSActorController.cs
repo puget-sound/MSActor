@@ -59,12 +59,13 @@ namespace MSActor.Controllers
         /// }
         /// </param>
         /// <returns></returns>
-        [Route("changeusersurname")]
+        [Route("changeuservalue")]
         [HttpPost]
-        public MSActorReturnMessageModel ChangeUserSurname([FromBody] ChangeUserValueJsonModel input)
+        public MSActorReturnMessageModel ChangeUserValue([FromBody] ChangeUserValueJsonModel input)
         {
             ADController control = new ADController();
-            return control.ChangeUserSurnameDriver(input.emplid, input.value);
+            return control.ChangeUserValueDriver(input.emplid, input.field, input.value);
         }
+
     }
 }

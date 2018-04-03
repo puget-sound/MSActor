@@ -165,7 +165,7 @@ namespace MSActor.Controllers
         /// <param name="emplid"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public MSActorReturnMessageModel ChangeUserSurnameDriver(string emplid, string value)
+        public MSActorReturnMessageModel ChangeUserValueDriver(string emplid, string field, string value)
         {
             try
             {
@@ -182,7 +182,7 @@ namespace MSActor.Controllers
                 PowerShell ex = PowerShell.Create();
                 ex.AddCommand("Set-ADUser");
                 ex.AddParameter("Identity", dName);
-                ex.AddParameter("Surname", value);
+                ex.AddParameter(field, value);
                 ex.AddParameter("ErrorVariable", "Err");
                 ex.Invoke();
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel("SUCCESS", "");
@@ -195,5 +195,7 @@ namespace MSActor.Controllers
                 return errorMessage;
             }
         }
+        
+        
     }
 }
