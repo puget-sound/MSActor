@@ -122,7 +122,7 @@ namespace MSActor.Controllers
 
                 ps = PowerShell.Create();
                 ps.AddCommand("new-aduser");
-                ps.AddParameter("name", user.emplid); //Name is actually emplid pending future change
+                ps.AddParameter("name", user.samaccountname); //Name used to be emplid, but has since been changed
 
                 ps.AddParameter("accountpassword", toPass);
                 ps.AddParameter("changepasswordatlogon", true);

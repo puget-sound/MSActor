@@ -67,5 +67,18 @@ namespace MSActor.Controllers
             return control.ChangeUserValueDriver(input.emplid, input.field, input.value);
         }
 
+        /// <summary>
+        /// Activates an exchange mailbox for a user based on 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("enableusermailbox")]
+        [HttpPost]
+        public MSActorReturnMessageModel EnableUserMailbox([FromBody] EnableMailboxModel input)
+        {
+            ExchangeController control = new ExchangeController();
+            return control.EnableUserMailboxDriver(input.identity, input.database, input.alias);
+        }
+
     }
 }

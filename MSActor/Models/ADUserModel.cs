@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -57,7 +58,29 @@ namespace MSActor.Models
             this.path = path;
         }
 
-
+        public ArrayList generateArray()
+        {
+            ArrayList toReturn = new ArrayList();
+            toReturn.Add(emplid);
+            toReturn.Add(city);
+            toReturn.Add(country);
+            toReturn.Add(department);
+            toReturn.Add(description);
+            toReturn.Add(employeeid);
+            toReturn.Add(givenname);
+            toReturn.Add(officephone);
+            toReturn.Add(initials);
+            toReturn.Add(office);
+            toReturn.Add(postalcode);
+            toReturn.Add(samaccountname);
+            toReturn.Add(state);
+            toReturn.Add(streetaddress);
+            toReturn.Add(surname);
+            toReturn.Add(title);
+            toReturn.Add(userprincipalname);
+            toReturn.Add(path);
+            return toReturn;       
+        }
         public string ToString()
         {
             string toReturn = "";
