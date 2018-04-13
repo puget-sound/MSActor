@@ -19,6 +19,8 @@ namespace MSActor.Controllers
     /// </summary>
     public class ADController
     {
+        public const string SuccessCode = "CMP";
+        public const string ErrorCode = "ERR";
         public ADUserModel GetADUserDriver(string emplid)
         {
             string searchName = "";
@@ -171,11 +173,11 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel("ERROR", e.Message);
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
                 Debug.WriteLine("Error: " + e.Message);
                 return errorMessage;
             }
-            MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel("SUCCESS", "");
+            MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
             return successMessage;
         }
 
@@ -207,13 +209,13 @@ namespace MSActor.Controllers
                 ex.AddParameter(field, value);
                 ex.AddParameter("ErrorVariable", "Err");
                 ex.Invoke();
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel("SUCCESS", "");
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
             }
             catch(Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel("ERROR", e.Message);
-                Debug.WriteLine("ERROR: " + e.Message);
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                
                 return errorMessage;
             }
         }

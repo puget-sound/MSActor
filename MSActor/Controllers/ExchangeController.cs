@@ -11,6 +11,8 @@ namespace MSActor.Controllers
 {
     public class ExchangeController
     {
+        public const string SuccessCode = "CMP";
+        public const string ErrorCode = "ERR";
         public ExchangeController()
         {
 
@@ -21,21 +23,21 @@ namespace MSActor.Controllers
             try
             {
                 PowerShell ps = PowerShell.Create();
-                //ps.AddCommand("Add-PSSnapin");
-                //ps.AddParameter("name", "Microsoft.Exchange.Management.PowerShell.SnapIn");
-                //ps.Invoke();
+                ps.AddCommand("Add-PSSnapin");
+                ps.AddParameter("name", "Microsoft.Exchange.Management.PowerShell.SnapIn");
+                
                 
                 ps.AddCommand("Enable-Mailbox");
                 ps.AddParameter("Identity", identity);
                 ps.AddParameter("database", database);
                 ps.AddParameter("alias", alias);
                 ps.Invoke();
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel("SUCCESS", "");
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
             }
             catch(Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel("ERROR", e.Message);
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
                 Debug.WriteLine("ERROR: " + e.Message);
                 return errorMessage;
             }
