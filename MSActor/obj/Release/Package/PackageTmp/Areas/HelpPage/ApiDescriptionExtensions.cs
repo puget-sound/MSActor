@@ -3,7 +3,7 @@ using System.Text;
 using System.Web;
 using System.Web.Http.Description;
 
-namespace ContactManager.Areas.HelpPage
+namespace MSActor.Areas.HelpPage
 {
     public static class ApiDescriptionExtensions
     {

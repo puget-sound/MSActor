@@ -11,10 +11,10 @@ using System.Net.Http.Headers;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Description;
-using ContactManager.Areas.HelpPage.ModelDescriptions;
-using ContactManager.Areas.HelpPage.Models;
+using MSActor.Areas.HelpPage.ModelDescriptions;
+using MSActor.Areas.HelpPage.Models;
 
-namespace ContactManager.Areas.HelpPage
+namespace MSActor.Areas.HelpPage
 {
     public static class HelpPageConfigurationExtensions
     {

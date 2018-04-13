@@ -1,7 +1,7 @@
 ﻿using System.Web;
 using System.Web.Optimization;
 
-namespace ContactManager
+namespace MSActor
 {
     public class BundleConfig
     {

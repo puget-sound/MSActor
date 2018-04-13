@@ -1,4 +1,4 @@
-namespace ContactManager.Areas.HelpPage
+namespace MSActor.Areas.HelpPage
 {
     /// <summary>
     /// Indicates whether the sample is used for request or response

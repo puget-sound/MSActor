@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net.Http.Headers;
 using System.Web.Http.Description;
-using ContactManager.Areas.HelpPage.ModelDescriptions;
+using MSActor.Areas.HelpPage.ModelDescriptions;
 
-namespace ContactManager.Areas.HelpPage.Models
+namespace MSActor.Areas.HelpPage.Models
 {
     /// <summary>
     /// The model that represents an API displayed on the help page.

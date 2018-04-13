@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 
-namespace ContactManager.Areas.HelpPage.ModelDescriptions
+namespace MSActor.Areas.HelpPage.ModelDescriptions
 {
     public class ComplexTypeModelDescription : ModelDescription
     {

@@ -504,8 +504,14 @@
             This method changes the surname of a user in AD. 
             </summary>
             <param name="emplid"></param>
+            <param name="field"></param>
             <param name="value"></param>
             <returns></returns>
+        </member>
+        <member name="T:MSActor.Controllers.FileServerController">
+            <summary>
+            A class to hold all the File Server related methods
+            </summary>
         </member>
         <member name="M:MSActor.Controllers.MSActorController.#ctor">
             <summary>
@@ -526,15 +532,23 @@
         </member>
         <member name="M:MSActor.Controllers.MSActorController.ChangeUserValue(MSActor.Models.ChangeUserValueJsonModel)">
             <summary>
-            This method changes the surname of a user in AD. 
+            This method changes the value of a field on a user in AD. 
             </summary>
             <param name="input"> This is a json parameter with the form 
             
             {
                 emplid = "XXXXXXXXXX",
+                field  = "field name",
                 value  = "Value Here"
             }
             </param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.EnableUserMailbox(MSActor.Models.EnableMailboxModel)">
+            <summary>
+            Activates an exchange mailbox for a user based on 
+            </summary>
+            <param name="input"></param>
             <returns></returns>
         </member>
         <member name="T:MSActor.Models.JsonErrorModel">

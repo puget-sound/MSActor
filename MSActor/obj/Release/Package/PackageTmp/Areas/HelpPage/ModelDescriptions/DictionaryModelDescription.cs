@@ -1,4 +1,4 @@
-namespace ContactManager.Areas.HelpPage.ModelDescriptions
+namespace MSActor.Areas.HelpPage.ModelDescriptions
 {
     public class DictionaryModelDescription : KeyValuePairModelDescription
     {

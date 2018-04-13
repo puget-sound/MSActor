@@ -1,6 +1,6 @@
 using System;
 
-namespace ContactManager.Areas.HelpPage.ModelDescriptions
+namespace MSActor.Areas.HelpPage.ModelDescriptions
 {
     public class ParameterAnnotation
     {
