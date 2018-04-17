@@ -1,9 +1,15 @@
 ﻿using MSActor.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Management.Automation;
+using System.Management.Automation.Remoting;
+using System.Management.Automation.Runspaces;
+using System.Net;
+using System.Security;
+using System.Security.Principal;
 using System.Web;
 
 
@@ -17,25 +23,78 @@ namespace MSActor.Controllers
         {
 
         }
-
-        public MSActorReturnMessageModel EnableUserMailboxDriver(string identity, string database, string alias)
+        private WSManConnectionInfo ConnectionInfo()
         {
+            WSManConnectionInfo conInfo = new WSManConnectionInfo(new Uri("http://spudevexch13a.spudev.corp"));
+            return conInfo;
+        }
+        public MSActorReturnMessageModel EnableUserMailboxDriver(string identity, string database, string alias)
+        {   
             try
             {
-                PowerShell ps = PowerShell.Create();
-                ps.AddCommand("Add-PSSnapin");
-                ps.AddParameter("name", "Microsoft.Exchange.Management.PowerShell.SnapIn");
+                string pass = "C#isc00l!";
+                string username = "athabascasvc";
+                SecureString securepass = new SecureString();
+                foreach(char x in pass)
+                {
+                    securepass.AppendChar(x);
+                }
+                PSCredential creds = new PSCredential(username, securepass);
+                PSSessionOption option = new PSSessionOption();
+                string url = "http://spudevexch13a.spudev.corp/powershell/";
+                System.Uri uri = new Uri(url);
+
+                var connectionInfo = new WSManConnectionInfo(uri,
+                    "http://schemas.microsoft.com/powershell/Microsoft.Exchange", creds);
                 
+
+                Runspace runspace = RunspaceFactory.CreateRunspace();
+
+                PowerShell powershell = PowerShell.Create();
+                PSCommand command = new PSCommand();
+                command.AddCommand("New-PSSession");
+                command.AddParameter("ConfigurationName", "Microsoft.Exchange");
+                command.AddParameter("ConnectionUri", uri);
+                command.AddParameter("Credential", creds);
+                command.AddParameter("Authentication", "Default");
+                powershell.Commands = command;
+                runspace.Open();
+                powershell.Runspace = runspace;
+                Collection<PSSession> result = powershell.Invoke<PSSession>();
+
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Set-Variable");
+                command.AddParameter("Name", "ra");
+                command.AddParameter("Value", result[0]);
                 
-                ps.AddCommand("Enable-Mailbox");
-                ps.AddParameter("Identity", identity);
-                ps.AddParameter("database", database);
-                ps.AddParameter("alias", alias);
-                ps.Invoke();
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddScript("Import-PSSession -Session $ra");
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Enable-Mailbox");
+                command.AddParameter("identity", identity);
+                command.AddParameter("database", database);
+                command.AddParameter("alias", alias);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+
+
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
+                
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
                 Debug.WriteLine("ERROR: " + e.Message);
