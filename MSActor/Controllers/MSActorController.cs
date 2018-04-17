@@ -73,12 +73,12 @@ namespace MSActor.Controllers
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [Route("enableusermailbox")]
+        [Route("enablemailbox")]
         [HttpPost]
-        public MSActorReturnMessageModel EnableUserMailbox([FromBody] EnableMailboxModel input)
+        public MSActorReturnMessageModel EnableMailbox([FromBody] EnableMailboxModel input)
         {
             ExchangeController control = new ExchangeController();
-            return control.EnableUserMailboxDriver(input.identity, input.database, input.alias);
+            return control.EnableMailboxDriver(input.database, input.alias, input.emailaddresses);
         }
 
     }

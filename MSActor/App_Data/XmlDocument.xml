@@ -544,7 +544,7 @@
             </param>
             <returns></returns>
         </member>
-        <member name="M:MSActor.Controllers.MSActorController.EnableUserMailbox(MSActor.Models.EnableMailboxModel)">
+        <member name="M:MSActor.Controllers.MSActorController.EnableMailbox(MSActor.Models.EnableMailboxModel)">
             <summary>
             Activates an exchange mailbox for a user based on 
             </summary>

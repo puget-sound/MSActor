@@ -7,12 +7,12 @@ namespace MSActor.Models
 {
     public class EnableMailboxModel
     {
-        public string identity;
+        public string emailaddresses;
         public string database;
         public string alias;
-        public EnableMailboxModel(string identity, string database, string alias)
+        public EnableMailboxModel(string database, string alias, string emailaddresses)
         {
-            this.identity = identity;
+            this.emailaddresses = emailaddresses;
             this.database = database;
             this.alias = alias;
         }

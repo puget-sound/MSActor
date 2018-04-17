@@ -28,7 +28,7 @@ namespace MSActor.Controllers
             WSManConnectionInfo conInfo = new WSManConnectionInfo(new Uri("http://spudevexch13a.spudev.corp"));
             return conInfo;
         }
-        public MSActorReturnMessageModel EnableUserMailboxDriver(string identity, string database, string alias)
+        public MSActorReturnMessageModel EnableMailboxDriver(string database, string alias, string emailaddresses)
         {   
             try
             {
@@ -82,13 +82,21 @@ namespace MSActor.Controllers
                 powershell = PowerShell.Create();
                 command = new PSCommand();
                 command.AddCommand("Enable-Mailbox");
-                command.AddParameter("identity", identity);
+                command.AddParameter("identity", alias);
                 command.AddParameter("database", database);
                 command.AddParameter("alias", alias);
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
 
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("set-mailbox");
+                command.AddParameter("identity", alias);
+                command.AddParameter("emailaddresses", emailaddresses);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
 
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
