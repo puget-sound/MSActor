@@ -23,44 +23,28 @@ namespace MSActor.Controllers
         {
 
         }
-        private WSManConnectionInfo ConnectionInfo()
-        {
-            WSManConnectionInfo conInfo = new WSManConnectionInfo(new Uri("http://spudevexch13a.spudev.corp"));
-            return conInfo;
-        }
         public MSActorReturnMessageModel EnableMailboxDriver(string database, string alias, string emailaddresses)
         {   
             try
             {
-                string pass = "C#isc00l!";
-                string username = "athabascasvc";
-                SecureString securepass = new SecureString();
-                foreach(char x in pass)
-                {
-                    securepass.AppendChar(x);
-                }
-                PSCredential creds = new PSCredential(username, securepass);
                 PSSessionOption option = new PSSessionOption();
                 string url = "http://spudevexch13a.spudev.corp/powershell/";
                 System.Uri uri = new Uri(url);
-
-                var connectionInfo = new WSManConnectionInfo(uri,
-                    "http://schemas.microsoft.com/powershell/Microsoft.Exchange", creds);
-                
-
+        
                 Runspace runspace = RunspaceFactory.CreateRunspace();
 
                 PowerShell powershell = PowerShell.Create();
                 PSCommand command = new PSCommand();
                 command.AddCommand("New-PSSession");
+                            
                 command.AddParameter("ConfigurationName", "Microsoft.Exchange");
                 command.AddParameter("ConnectionUri", uri);
-                command.AddParameter("Credential", creds);
                 command.AddParameter("Authentication", "Default");
                 powershell.Commands = command;
                 runspace.Open();
                 powershell.Runspace = runspace;
                 Collection<PSSession> result = powershell.Invoke<PSSession>();
+                
 
                 powershell = PowerShell.Create();
                 command = new PSCommand();
@@ -78,11 +62,12 @@ namespace MSActor.Controllers
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
-
+                
                 powershell = PowerShell.Create();
                 command = new PSCommand();
                 command.AddCommand("Enable-Mailbox");
                 command.AddParameter("identity", alias);
+                
                 command.AddParameter("database", database);
                 command.AddParameter("alias", alias);
                 powershell.Commands = command;
@@ -109,5 +94,13 @@ namespace MSActor.Controllers
                 return errorMessage;
             }
         }
+
+        public MSActorReturnMessageModel RemoveMailboxDriver(string employeeid, string samaccountname)
+        {
+            PowerShell ps = PowerShell.Create();
+            ps.AddScript("get-aduser –filter * -properties * | where-object {$_.employeeid –eq }");
+            return null;
+        }
     }
+
 }

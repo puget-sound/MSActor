@@ -20,7 +20,7 @@ namespace MSActor.Controllers
         /// Constructor for the MSActor Controller. Runs all MSActor Functions. 
         /// </summary>
         public MSActorController() {
-
+            Debug.WriteLine("We are Legion for we are many");
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace MSActor.Controllers
         /// </summary>
         [Route("getaduserbyemplid")]
         [HttpPost]
-        public ADUserModel GetAdUserByEmplid([FromBody] EmplidModel emplidWrap)
+        private ADUserModel GetAdUserByEmplid([FromBody] EmplidModel emplidWrap)
         {
             ADController control = new ADController();
             return control.GetADUserDriver(emplidWrap.emplid);
@@ -62,10 +62,11 @@ namespace MSActor.Controllers
         /// <returns></returns>
         [Route("changeuservalue")]
         [HttpPost]
-        public MSActorReturnMessageModel ChangeUserValue([FromBody] ChangeUserValueJsonModel input)
+        public MSActorReturnMessageModel ChangeUserValue([FromBody] ChangeUserValueModel input)
         {
             ADController control = new ADController();
-            return control.ChangeUserValueDriver(input.emplid, input.field, input.value);
+            Debug.WriteLine("General Kenobi: " + input.employeeid);
+            return control.ChangeUserValueDriver(input.employeeid, input.samaccountname, input.field, input.value);
         }
 
         /// <summary>
@@ -79,6 +80,18 @@ namespace MSActor.Controllers
         {
             ExchangeController control = new ExchangeController();
             return control.EnableMailboxDriver(input.database, input.alias, input.emailaddresses);
+        }
+        /// <summary>
+        /// Creates a Folder on the file server at the given file path
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("newdirectory")]
+        [HttpPost]
+        public MSActorReturnMessageModel NewDirectory([FromBody] CreateFolderModel input)
+        {
+            FileServerController control = new FileServerController();
+            return control.NewDirectory(input.path);
         }
 
     }

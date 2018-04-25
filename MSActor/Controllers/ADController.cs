@@ -185,24 +185,18 @@ namespace MSActor.Controllers
         /// <summary>
         /// This method changes the surname of a user in AD. 
         /// </summary>
-        /// <param name="emplid"></param>
+        /// <param name="employeeid"></param>
         /// <param name="field"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public MSActorReturnMessageModel ChangeUserValueDriver(string emplid, string field, string value)
+        public MSActorReturnMessageModel ChangeUserValueDriver(string employeeid, string samaccountname, string field, string value)
         {
+            UtilityController util = new UtilityController();
             try
             {
-                PowerShell ps = PowerShell.Create();
-                ps.AddCommand("get-aduser");
-                ps.AddParameter("filter", "Name -eq " + emplid);
-                ps.AddParameter("properties", "*");
-                Collection<PSObject> users = ps.Invoke();
-                string dName = "";
-                foreach (PSObject user in users)
-                {
-                    dName = user.Properties["DistinguishedName"].Value.ToString();
-                }
+                string dName;
+                PSObject user = util.getADUser(employeeid, samaccountname);
+                dName = user.Properties["DistinguishedName"].Value.ToString();
                 PowerShell ex = PowerShell.Create();
                 ex.AddCommand("Set-ADUser");
                 ex.AddParameter("Identity", dName);
@@ -215,7 +209,7 @@ namespace MSActor.Controllers
             catch(Exception e)
             {
                 MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                
+                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
                 return errorMessage;
             }
         }

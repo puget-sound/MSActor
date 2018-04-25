@@ -1,21 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Web;
 
 namespace MSActor.Models
 {
-    public class ChangeUserValueJsonModel
+    public class ChangeUserValueModel
     {
-        public string emplid;
+        public string employeeid;
+        public string samaccountname;
         public string field;
         public string value;
         
-        public ChangeUserValueJsonModel(string emplid, string field, string value)
+        public ChangeUserValueModel(string employeeid, string samaccountname, string field, string value)
         {
-            this.emplid = emplid;
+            
+            this.employeeid = employeeid;
+            this.samaccountname = samaccountname;
             this.field = field;
             this.value = value;
+
         }
     }
 }
