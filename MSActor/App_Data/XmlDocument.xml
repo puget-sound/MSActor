@@ -508,6 +508,16 @@
             <param name="value"></param>
             <returns></returns>
         </member>
+        <member name="M:MSActor.Controllers.ADController.SetHomeDirectory(System.String,System.String,System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="employeeid"></param>
+            <param name="samaccountname"></param>
+            <param name="homedirectory"></param>
+            <param name="homedrive"></param>
+            <returns></returns>
+        </member>
         <member name="T:MSActor.Controllers.FileServerController">
             <summary>
             A class to hold all the File Server related methods
@@ -554,6 +564,13 @@
         <member name="M:MSActor.Controllers.MSActorController.NewDirectory(MSActor.Models.CreateFolderModel)">
             <summary>
             Creates a Folder on the file server at the given file path
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.SetHomeDirectory(MSActor.Models.SetHomeDirectoryModel)">
+            <summary>
+            
             </summary>
             <param name="input"></param>
             <returns></returns>

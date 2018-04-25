@@ -94,5 +94,18 @@ namespace MSActor.Controllers
             return control.NewDirectory(input.path);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("sethomedirectory")]
+        [HttpPost]
+        public MSActorReturnMessageModel SetHomeDirectory([FromBody] SetHomeDirectoryModel input)
+        {
+            ADController control = new ADController();
+            return control.SetHomeDirectory(input.employeeid, input.samaccountname, input.homedirectory, input.homedrive);
+        }
+
     }
 }

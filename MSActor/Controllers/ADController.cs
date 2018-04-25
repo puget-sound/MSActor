@@ -213,7 +213,42 @@ namespace MSActor.Controllers
                 return errorMessage;
             }
         }
-        
-        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="employeeid"></param>
+        /// <param name="samaccountname"></param>
+        /// <param name="homedirectory"></param>
+        /// <param name="homedrive"></param>
+        /// <returns></returns>
+        public MSActorReturnMessageModel SetHomeDirectory(string employeeid, string samaccountname, string homedirectory, string homedrive)
+        {
+            UtilityController util = new UtilityController();
+            try
+            {
+                string dName;
+                PSObject user = util.getADUser(employeeid, samaccountname);
+                Debug.WriteLine(user);
+                dName = user.Properties["DistinguishedName"].Value.ToString();
+                PowerShell ex = PowerShell.Create();
+                ex.AddCommand("Set-ADUser");
+                ex.AddParameter("Identity", dName);
+                ex.AddParameter("homedirectory", homedirectory);
+                ex.AddParameter("homedrive", homedrive);
+                //ex.AddParameter("ErrorVariable", "Err");
+                ex.Invoke();
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
+            }
+            catch (Exception e)
+            {
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                return errorMessage;
+            }
+        }
+
+
     }
 }

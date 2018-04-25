@@ -197,6 +197,7 @@
     <Compile Include="Models\EnableMailboxModel.cs" />
     <Compile Include="Models\JsonErrorModel.cs" />
     <Compile Include="Models\MSActorReturnMessageModel.cs" />
+    <Compile Include="Models\SetHomeDirectoryModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -284,7 +285,7 @@
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
-          <UseIIS>True</UseIIS>
+          <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>50679</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
