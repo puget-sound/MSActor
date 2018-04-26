@@ -101,6 +101,69 @@ namespace MSActor.Controllers
             ps.AddScript("get-aduser –filter * -properties * | where-object {$_.employeeid –eq }");
             return null;
         }
+
+        public MSActorReturnMessageModel SetMailboxQuotas(string identity, string prohibitsendreceivequota, string prohibitsendquota, string issuewarningquota)
+        {
+            try
+            {
+                PSSessionOption option = new PSSessionOption();
+                string url = "http://spudevexch13a.spudev.corp/powershell/";
+                System.Uri uri = new Uri(url);
+
+                Runspace runspace = RunspaceFactory.CreateRunspace();
+
+                PowerShell powershell = PowerShell.Create();
+                PSCommand command = new PSCommand();
+                command.AddCommand("New-PSSession");
+
+                command.AddParameter("ConfigurationName", "Microsoft.Exchange");
+                command.AddParameter("ConnectionUri", uri);
+                command.AddParameter("Authentication", "Default");
+                powershell.Commands = command;
+                runspace.Open();
+                powershell.Runspace = runspace;
+                Collection<PSSession> result = powershell.Invoke<PSSession>();
+
+
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Set-Variable");
+                command.AddParameter("Name", "ra");
+                command.AddParameter("Value", result[0]);
+
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddScript("Import-PSSession -Session $ra");
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Set-Mailbox");
+                command.AddParameter("Identity", identity);
+                command.AddParameter("IssueWarningQuota", issuewarningquota);
+                command.AddParameter("ProhibitSendQuota", prohibitsendquota);
+                command.AddParameter("ProhibitSendReceiveQuota", prohibitsendreceivequota);
+                command.AddParameter("UseDatabaseQuotaDefaults", false);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
+            }
+            catch (Exception e)
+            {
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                Debug.WriteLine("ERROR: " + e.Message);
+                return errorMessage;
+            }
+        }
     }
 
 }

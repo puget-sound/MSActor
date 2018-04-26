@@ -120,5 +120,17 @@ namespace MSActor.Controllers
             return control.NewADGroup(input.name, input.description, input.info, input.path, input.groupcategory, input.groupscope);
         }
 
+        /// <summary>
+        /// Sets quotas on mailboxes
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("setmailboxquotas")]
+        [HttpPost]
+        public MSActorReturnMessageModel SetMailboxQuotas([FromBody] SetMailboxQuotasModel input)
+        {
+            ExchangeController control = new ExchangeController();
+            return control.SetMailboxQuotas(input.identity, input.prohibitsendreceivequota, input.prohibitsendquota, input.issuewarningquota);
+        }
     }
 }
