@@ -215,7 +215,7 @@ namespace MSActor.Controllers
         }
 
         /// <summary>
-        /// 
+        /// This method changes the home directory of a user in AD.
         /// </summary>
         /// <param name="employeeid"></param>
         /// <param name="samaccountname"></param>
@@ -236,7 +236,6 @@ namespace MSActor.Controllers
                 ex.AddParameter("Identity", dName);
                 ex.AddParameter("homedirectory", homedirectory);
                 ex.AddParameter("homedrive", homedrive);
-                //ex.AddParameter("ErrorVariable", "Err");
                 ex.Invoke();
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
@@ -249,6 +248,40 @@ namespace MSActor.Controllers
             }
         }
 
+        /// <summary>
+        /// This method creates a new AD group
+        /// </summary>
+        /// <param name="group_name"></param>
+        /// <param name="group_description"></param>
+        /// <param name="group_info"></param>
+        /// <param name="group_ad_path"></param>
+        /// <param name="group_category"></param>
+        /// <param name="group_scope"></param>
+        /// <returns></returns>
+        public MSActorReturnMessageModel NewADGroup(string group_name, string group_description, string group_info, string group_ad_path, string group_category, string group_scope)
+        {
+            UtilityController util = new UtilityController();
+            try
+            {
+                PowerShell ex = PowerShell.Create();
+                ex.AddCommand("new-adgroup");
+                ex.AddParameter("name", group_name);
+                ex.AddParameter("description", group_description);
+                ex.AddParameter("groupcategory", group_category);
+                ex.AddParameter("displayname", group_info);
+                ex.AddParameter("path", group_ad_path);
+                ex.AddParameter("groupscope", group_scope);
+                ex.Invoke();
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
+            }
+            catch (Exception e)
+            {
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                return errorMessage;
+            }
+        }
 
     }
 }

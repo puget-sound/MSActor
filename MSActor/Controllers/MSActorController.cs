@@ -95,7 +95,7 @@ namespace MSActor.Controllers
         }
 
         /// <summary>
-        /// 
+        /// Creates a new Home Directory for the user
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
@@ -105,6 +105,19 @@ namespace MSActor.Controllers
         {
             ADController control = new ADController();
             return control.SetHomeDirectory(input.employeeid, input.samaccountname, input.homedirectory, input.homedrive);
+        }
+
+        /// <summary>
+        /// Creates a new AD Group
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("newadgroup")]
+        [HttpPost]
+        public MSActorReturnMessageModel NewADGroup([FromBody] NewADGroupModel input)
+        {
+            ADController control = new ADController();
+            return control.NewADGroup(input.name, input.description, input.info, input.path, input.groupcategory, input.groupscope);
         }
 
     }

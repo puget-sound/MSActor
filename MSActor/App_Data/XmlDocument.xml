@@ -510,12 +510,24 @@
         </member>
         <member name="M:MSActor.Controllers.ADController.SetHomeDirectory(System.String,System.String,System.String,System.String)">
             <summary>
-            
+            This method changes the home directory of a user in AD.
             </summary>
             <param name="employeeid"></param>
             <param name="samaccountname"></param>
             <param name="homedirectory"></param>
             <param name="homedrive"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.ADController.NewADGroup(System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            This method creates a new AD group
+            </summary>
+            <param name="group_name"></param>
+            <param name="group_description"></param>
+            <param name="group_info"></param>
+            <param name="group_ad_path"></param>
+            <param name="group_category"></param>
+            <param name="group_scope"></param>
             <returns></returns>
         </member>
         <member name="T:MSActor.Controllers.FileServerController">
@@ -570,7 +582,14 @@
         </member>
         <member name="M:MSActor.Controllers.MSActorController.SetHomeDirectory(MSActor.Models.SetHomeDirectoryModel)">
             <summary>
-            
+            Creates a new Home Directory for the user
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.NewADGroup(MSActor.Models.NewADGroupModel)">
+            <summary>
+            Creates a new AD Group
             </summary>
             <param name="input"></param>
             <returns></returns>

@@ -197,6 +197,7 @@
     <Compile Include="Models\EnableMailboxModel.cs" />
     <Compile Include="Models\JsonErrorModel.cs" />
     <Compile Include="Models\MSActorReturnMessageModel.cs" />
+    <Compile Include="Models\NewADGroupModel.cs" />
     <Compile Include="Models\SetHomeDirectoryModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
