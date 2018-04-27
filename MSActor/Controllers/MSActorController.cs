@@ -132,5 +132,16 @@ namespace MSActor.Controllers
             ExchangeController control = new ExchangeController();
             return control.SetMailboxQuotas(input.identity, input.prohibitsendreceivequota, input.prohibitsendquota, input.issuewarningquota);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [Route("setmailboxname")]
+        [HttpPost]
+        public MSActorReturnMessageModel SetMailboxName([FromBody] SetMailboxNameModel input)
+        {
+            ExchangeController control = new ExchangeController();
+            return control.SetMailboxName(input.identity, input.alias, input.addemailaddress);
+        }
     }
 }
