@@ -15,7 +15,10 @@ namespace MSActor.Models
         {
             this.identity = identity;
             this.alias = alias;
-            this.addemailaddress = addemailaddress;
+            if (addemailaddress != null)
+            {
+                this.addemailaddress = addemailaddress;
+            }
         }
     }
 }

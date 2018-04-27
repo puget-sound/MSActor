@@ -211,9 +211,12 @@ namespace MSActor.Controllers
                 command.AddCommand("Set-Mailbox");
                 command.AddParameter("Identity", identity);
                 command.AddParameter("Alias", alias);
-                Hashtable emailaddresses = new Hashtable();
-                emailaddresses.Add("add", addemailaddress);
-                command.AddParameter("EmailAddresses", emailaddresses);
+                if (addemailaddress != null)
+                {
+                    Hashtable emailaddresses = new Hashtable();
+                    emailaddresses.Add("add", addemailaddress);
+                    command.AddParameter("EmailAddresses", emailaddresses);
+                }
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
