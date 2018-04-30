@@ -603,8 +603,17 @@
         </member>
         <member name="M:MSActor.Controllers.MSActorController.SetMailboxName(MSActor.Models.SetMailboxNameModel)">
             <summary>
-            
+            Changes alias on mailbox
             </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.NewMoveRequest(MSActor.Models.NewMoveRequestModel)">
+            <summary>
+            Makes a new request to move mailbox from one database to another
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
         </member>
         <member name="T:MSActor.Models.JsonErrorModel">
             <summary>

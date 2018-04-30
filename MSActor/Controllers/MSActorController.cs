@@ -134,14 +134,29 @@ namespace MSActor.Controllers
         }
 
         /// <summary>
-        /// 
+        /// Changes alias on mailbox
         /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         [Route("setmailboxname")]
         [HttpPost]
         public MSActorReturnMessageModel SetMailboxName([FromBody] SetMailboxNameModel input)
         {
             ExchangeController control = new ExchangeController();
             return control.SetMailboxName(input.identity, input.alias, input.addemailaddress);
+        }
+
+        /// <summary>
+        /// Makes a new request to move mailbox from one database to another
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("newmoverequest")]
+        [HttpPost]
+        public MSActorReturnMessageModel NewMoveRequest([FromBody] NewMoveRequestModel input)
+        {
+            ExchangeController control = new ExchangeController();
+            return control.NewMoveRequest(input.identity, input.targetdatabase);
         }
     }
 }
