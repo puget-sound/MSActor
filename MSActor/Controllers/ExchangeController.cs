@@ -275,6 +275,44 @@ namespace MSActor.Controllers
 
                 powershell = PowerShell.Create();
                 command = new PSCommand();
+                command.AddCommand("Get-MoveRequest");
+                command.AddParameter("Identity", identity);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                Collection<PSObject> existingMoveRequests = powershell.Invoke();
+                // If there already is a move request we need to figure out what to do about it
+                if (existingMoveRequests.Count > 0)
+                {
+                    if (existingMoveRequests[0].Properties["Status"].Value.ToString() != "Completed")
+                    {
+                        // Is the same move request in flight or are we conflicting with another one?
+                        if (existingMoveRequests[0].Properties["TargetDatabase"].Value.ToString() == targetdatabase)
+                        {
+                            MSActorReturnMessageModel pndMessage = new MSActorReturnMessageModel(PendingCode, "");
+                            return pndMessage;
+                        }
+                        else
+                        {
+                            MSActorReturnMessageModel errMessage = new MSActorReturnMessageModel(ErrorCode, "Request still exists to move this mailbox to a different database");
+                            return errMessage;
+                        }
+                    }
+                    else
+                    // Remove the completed move request and go on to make a new one
+                    {
+                        powershell = PowerShell.Create();
+                        command = new PSCommand();
+                        command.AddCommand("Remove-MoveRequest");
+                        command.AddParameter("Identity", identity);
+                        command.AddParameter("Confirm", false);
+                        powershell.Commands = command;
+                        powershell.Runspace = runspace;
+                        powershell.Invoke();
+                    }
+                }
+
+                powershell = PowerShell.Create();
+                command = new PSCommand();
                 command.AddCommand("New-MoveRequest");
                 command.AddParameter("Identity", identity);
                 command.AddParameter("TargetDatabase", targetdatabase);
