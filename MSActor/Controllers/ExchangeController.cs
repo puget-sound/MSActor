@@ -38,7 +38,6 @@ namespace MSActor.Controllers
                 PowerShell powershell = PowerShell.Create();
                 PSCommand command = new PSCommand();
                 command.AddCommand("New-PSSession");
-                            
                 command.AddParameter("ConfigurationName", "Microsoft.Exchange");
                 command.AddParameter("ConnectionUri", uri);
                 command.AddParameter("Authentication", "Default");
@@ -46,17 +45,24 @@ namespace MSActor.Controllers
                 runspace.Open();
                 powershell.Runspace = runspace;
                 Collection<PSSession> result = powershell.Invoke<PSSession>();
-                
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
 
                 powershell = PowerShell.Create();
                 command = new PSCommand();
                 command.AddCommand("Set-Variable");
                 command.AddParameter("Name", "ra");
                 command.AddParameter("Value", result[0]);
-                
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 powershell = PowerShell.Create();
                 command = new PSCommand();
@@ -64,17 +70,24 @@ namespace MSActor.Controllers
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
-                
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
                 powershell = PowerShell.Create();
                 command = new PSCommand();
                 command.AddCommand("Enable-Mailbox");
                 command.AddParameter("identity", alias);
-                
                 command.AddParameter("database", database);
                 command.AddParameter("alias", alias);
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 powershell = PowerShell.Create();
                 command = new PSCommand();
@@ -84,6 +97,10 @@ namespace MSActor.Controllers
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
@@ -95,13 +112,6 @@ namespace MSActor.Controllers
                 Debug.WriteLine("ERROR: " + e.Message);
                 return errorMessage;
             }
-        }
-
-        public MSActorReturnMessageModel RemoveMailboxDriver(string employeeid, string samaccountname)
-        {
-            PowerShell ps = PowerShell.Create();
-            ps.AddScript("get-aduser –filter * -properties * | where-object {$_.employeeid –eq }");
-            return null;
         }
 
         public MSActorReturnMessageModel SetMailboxQuotas(string identity, string prohibitsendreceivequota, string prohibitsendquota, string issuewarningquota)
@@ -117,7 +127,6 @@ namespace MSActor.Controllers
                 PowerShell powershell = PowerShell.Create();
                 PSCommand command = new PSCommand();
                 command.AddCommand("New-PSSession");
-
                 command.AddParameter("ConfigurationName", "Microsoft.Exchange");
                 command.AddParameter("ConnectionUri", uri);
                 command.AddParameter("Authentication", "Default");
@@ -125,17 +134,23 @@ namespace MSActor.Controllers
                 runspace.Open();
                 powershell.Runspace = runspace;
                 Collection<PSSession> result = powershell.Invoke<PSSession>();
-
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 powershell = PowerShell.Create();
                 command = new PSCommand();
                 command.AddCommand("Set-Variable");
                 command.AddParameter("Name", "ra");
                 command.AddParameter("Value", result[0]);
-
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 powershell = PowerShell.Create();
                 command = new PSCommand();
@@ -143,6 +158,10 @@ namespace MSActor.Controllers
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 powershell = PowerShell.Create();
                 command = new PSCommand();
@@ -155,6 +174,10 @@ namespace MSActor.Controllers
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
@@ -180,7 +203,6 @@ namespace MSActor.Controllers
                 PowerShell powershell = PowerShell.Create();
                 PSCommand command = new PSCommand();
                 command.AddCommand("New-PSSession");
-
                 command.AddParameter("ConfigurationName", "Microsoft.Exchange");
                 command.AddParameter("ConnectionUri", uri);
                 command.AddParameter("Authentication", "Default");
@@ -188,6 +210,10 @@ namespace MSActor.Controllers
                 runspace.Open();
                 powershell.Runspace = runspace;
                 Collection<PSSession> result = powershell.Invoke<PSSession>();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
 
                 powershell = PowerShell.Create();
@@ -195,10 +221,13 @@ namespace MSActor.Controllers
                 command.AddCommand("Set-Variable");
                 command.AddParameter("Name", "ra");
                 command.AddParameter("Value", result[0]);
-
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 powershell = PowerShell.Create();
                 command = new PSCommand();
@@ -206,6 +235,10 @@ namespace MSActor.Controllers
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 powershell = PowerShell.Create();
                 command = new PSCommand();
@@ -221,6 +254,10 @@ namespace MSActor.Controllers
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
@@ -254,17 +291,23 @@ namespace MSActor.Controllers
                 runspace.Open();
                 powershell.Runspace = runspace;
                 Collection<PSSession> result = powershell.Invoke<PSSession>();
-
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 powershell = PowerShell.Create();
                 command = new PSCommand();
                 command.AddCommand("Set-Variable");
                 command.AddParameter("Name", "ra");
                 command.AddParameter("Value", result[0]);
-
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 powershell = PowerShell.Create();
                 command = new PSCommand();
@@ -272,6 +315,10 @@ namespace MSActor.Controllers
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 powershell = PowerShell.Create();
                 command = new PSCommand();
@@ -280,13 +327,23 @@ namespace MSActor.Controllers
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 Collection<PSObject> existingMoveRequests = powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    RemoteException ex = powershell.Streams.Error[0].Exception as RemoteException;
+                    // ManagementObjectNotFoundException is okay; it means there was not an existing move request
+                    if (!ex.SerializedRemoteException.TypeNames.Contains("Deserialized.Microsoft.Exchange.Configuration.Tasks.ManagementObjectNotFoundException"))
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                }
+
                 // If there already is a move request we need to figure out what to do about it
                 if (existingMoveRequests.Count > 0)
                 {
                     if (existingMoveRequests[0].Properties["Status"].Value.ToString() != "Completed")
                     {
                         // Is the same move request in flight or are we conflicting with another one?
-                        if (existingMoveRequests[0].Properties["TargetDatabase"].Value.ToString() == targetdatabase)
+                        if (existingMoveRequests[0].Properties["TargetDatabase"].Value as string == targetdatabase)
                         {
                             MSActorReturnMessageModel pndMessage = new MSActorReturnMessageModel(PendingCode, "");
                             return pndMessage;
@@ -308,6 +365,10 @@ namespace MSActor.Controllers
                         powershell.Commands = command;
                         powershell.Runspace = runspace;
                         powershell.Invoke();
+                        if (powershell.Streams.Error.Count > 0)
+                        {
+                            throw powershell.Streams.Error[0].Exception;
+                        }
                     }
                 }
 
@@ -319,10 +380,137 @@ namespace MSActor.Controllers
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    if (powershell.Streams.Error[0].Exception.Message.Contains("is already in the target database"))
+                    {
+                        MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                        return successMessage;
+                    }
+                    else
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                }
+                else
+                {
+                    MSActorReturnMessageModel pendingMessage = new MSActorReturnMessageModel(PendingCode, "");
+                    return pendingMessage;
+                }
 
-                MSActorReturnMessageModel pendingMessage = new MSActorReturnMessageModel(PendingCode, "");
-                return pendingMessage;
+            }
+            catch (Exception e)
+            {
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                Debug.WriteLine("ERROR: " + e.Message);
+                return errorMessage;
+            }
+        }
 
+        public MSActorReturnMessageModel DisableMailbox(string identity)
+        {
+            try
+            {
+                // For use later; there are multiple routes to success
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+
+                PSSessionOption option = new PSSessionOption();
+                string url = "http://spudevexch13a.spudev.corp/powershell/";
+                System.Uri uri = new Uri(url);
+
+                Runspace runspace = RunspaceFactory.CreateRunspace();
+
+                PowerShell powershell = PowerShell.Create();
+                PSCommand command = new PSCommand();
+                command.AddCommand("New-PSSession");
+                command.AddParameter("ConfigurationName", "Microsoft.Exchange");
+                command.AddParameter("ConnectionUri", uri);
+                command.AddParameter("Authentication", "Default");
+                powershell.Commands = command;
+                runspace.Open();
+                powershell.Runspace = runspace;
+                Collection<PSSession> result = powershell.Invoke<PSSession>();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Set-Variable");
+                command.AddParameter("Name", "ra");
+                command.AddParameter("Value", result[0]);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddScript("Import-PSSession -Session $ra");
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                // First check for mobile devices and remove them
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Get-MobileDevice");
+                command.AddParameter("Mailbox", identity);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                Collection<PSObject> mobileDevices = powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    // Mailbox may already be gone
+                    RemoteException ex = powershell.Streams.Error[0].Exception as RemoteException;
+                    if (ex.SerializedRemoteException.TypeNames.Contains("Deserialized.Microsoft.Exchange.Management.AirSync.RecipientNotFoundException"))
+                    {
+                        return successMessage;
+                    }
+                    else
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                }
+                foreach (PSObject device in mobileDevices)
+                {
+                    string deviceIdentity = device.Properties["Identity"].Value as string;
+                    powershell = PowerShell.Create();
+                    command = new PSCommand();
+                    command.AddCommand("Remove-MobileDevice");
+                    command.AddParameter("Identity", deviceIdentity);
+                    command.AddParameter("Confirm", false);
+                    powershell.Commands = command;
+                    powershell.Runspace = runspace;
+                    powershell.Invoke();
+                    if (powershell.Streams.Error.Count > 0)
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                }
+
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Disable-Mailbox");
+                command.AddParameter("Identity", identity);
+                command.AddParameter("Confirm", false);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                return successMessage;
             }
             catch (Exception e)
             {

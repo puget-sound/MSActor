@@ -158,5 +158,18 @@ namespace MSActor.Controllers
             ExchangeController control = new ExchangeController();
             return control.NewMoveRequest(input.identity, input.targetdatabase);
         }
+
+        /// <summary>
+        /// Removes a mailbox
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("disablemailbox")]
+        [HttpPost]
+        public MSActorReturnMessageModel DisableMailbox([FromBody] IdentityModel input)
+        {
+            ExchangeController control = new ExchangeController();
+            return control.DisableMailbox(input.identity);
+        }
     }
 }
