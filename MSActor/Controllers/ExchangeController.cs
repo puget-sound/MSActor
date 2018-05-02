@@ -340,7 +340,7 @@ namespace MSActor.Controllers
                 // If there already is a move request we need to figure out what to do about it
                 if (existingMoveRequests.Count > 0)
                 {
-                    if (existingMoveRequests[0].Properties["Status"].Value.ToString() != "Completed")
+                    if (existingMoveRequests[0].Properties["Status"].Value as string != "Completed")
                     {
                         // Is the same move request in flight or are we conflicting with another one?
                         if (existingMoveRequests[0].Properties["TargetDatabase"].Value as string == targetdatabase)
@@ -406,6 +406,96 @@ namespace MSActor.Controllers
                 return errorMessage;
             }
         }
+
+        public MSActorReturnMessageModel GetMoveRequest(string identity)
+        {
+            // Multiple paths to error
+            MSActorReturnMessageModel errorMessage;
+            try
+            {
+                PSSessionOption option = new PSSessionOption();
+                string url = "http://spudevexch13a.spudev.corp/powershell/";
+                System.Uri uri = new Uri(url);
+
+                Runspace runspace = RunspaceFactory.CreateRunspace();
+
+                PowerShell powershell = PowerShell.Create();
+                PSCommand command = new PSCommand();
+                command.AddCommand("New-PSSession");
+
+                command.AddParameter("ConfigurationName", "Microsoft.Exchange");
+                command.AddParameter("ConnectionUri", uri);
+                command.AddParameter("Authentication", "Default");
+                powershell.Commands = command;
+                runspace.Open();
+                powershell.Runspace = runspace;
+                Collection<PSSession> result = powershell.Invoke<PSSession>();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Set-Variable");
+                command.AddParameter("Name", "ra");
+                command.AddParameter("Value", result[0]);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddScript("Import-PSSession -Session $ra");
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Get-MoveRequest");
+                command.AddParameter("Identity", identity);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                Collection<PSObject> existingMoveRequests = powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    // Here we are throwing an error on purpose if a move request does not exist
+                    throw powershell.Streams.Error[0].Exception;
+                }
+                string status = existingMoveRequests[0].Properties["Status"].Value as string;
+                switch (status)
+                {
+                    case "Completed":
+                        MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                        return successMessage;
+                    case "InProgress":
+                    case "Queued":
+                        MSActorReturnMessageModel pendingMessage = new MSActorReturnMessageModel(PendingCode, "");
+                        return pendingMessage;
+                    default:
+                        string errorString = "Move request status is '" + status + "'";
+                        errorMessage = new MSActorReturnMessageModel(ErrorCode, errorString);
+                        Debug.WriteLine("ERROR: " + errorString);
+                        return errorMessage;
+                }
+            }
+            catch (Exception e)
+            {
+                errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                Debug.WriteLine("ERROR: " + e.Message);
+                return errorMessage;
+            }
+        }
+
 
         public MSActorReturnMessageModel DisableMailbox(string identity)
         {

@@ -160,6 +160,19 @@ namespace MSActor.Controllers
         }
 
         /// <summary>
+        /// Checks on status of mailbox move request
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("getmoverequest")]
+        [HttpPost]
+        public MSActorReturnMessageModel GetMoveRequest([FromBody] IdentityModel input)
+        {
+            ExchangeController control = new ExchangeController();
+            return control.GetMoveRequest(input.identity);
+        }
+
+        /// <summary>
         /// Removes a mailbox
         /// </summary>
         /// <param name="input"></param>
