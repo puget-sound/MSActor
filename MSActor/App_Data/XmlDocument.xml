@@ -573,9 +573,23 @@
             <param name="input"></param>
             <returns></returns>
         </member>
-        <member name="M:MSActor.Controllers.MSActorController.NewDirectory(MSActor.Models.CreateFolderModel)">
+        <member name="M:MSActor.Controllers.MSActorController.NewDirectory(MSActor.Models.DirectoryModel)">
             <summary>
             Creates a Folder on the file server at the given file path
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.RemoveDirectory(MSActor.Models.DirectoryModel)">
+            <summary>
+            Delete folder specified
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.AddNetShare(MSActor.Models.ShareModel)">
+            <summary>
+            Create share for folder specified
             </summary>
             <param name="input"></param>
             <returns></returns>

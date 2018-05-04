@@ -81,6 +81,7 @@ namespace MSActor.Controllers
             ExchangeController control = new ExchangeController();
             return control.EnableMailboxDriver(input.database, input.alias, input.emailaddresses);
         }
+        
         /// <summary>
         /// Creates a Folder on the file server at the given file path
         /// </summary>
@@ -88,10 +89,36 @@ namespace MSActor.Controllers
         /// <returns></returns>
         [Route("newdirectory")]
         [HttpPost]
-        public MSActorReturnMessageModel NewDirectory([FromBody] CreateFolderModel input)
+        public MSActorReturnMessageModel NewDirectory([FromBody] DirectoryModel input)
         {
             FileServerController control = new FileServerController();
-            return control.NewDirectory(input.path);
+            return control.NewDirectory(input.computername, input.path);
+        }
+
+        /// <summary>
+        /// Delete folder specified
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("removedirectory")]
+        [HttpPost]
+        public MSActorReturnMessageModel RemoveDirectory([FromBody] DirectoryModel input)
+        {
+            FileServerController control = new FileServerController();
+            return control.RemoveDirectory(input.computername, input.path);
+        }
+
+        /// <summary>
+        /// Create share for folder specified
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("addnetshare")]
+        [HttpPost]
+        public MSActorReturnMessageModel AddNetShare([FromBody] ShareModel input)
+        {
+            FileServerController control = new FileServerController();
+            return control.AddNetShare(input.name, input.computername, input.path);
         }
 
         /// <summary>

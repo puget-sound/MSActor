@@ -192,6 +192,7 @@
     </Compile>
     <Compile Include="Models\ADUserModel.cs" />
     <Compile Include="Models\ChangeUserValueJsonModel.cs" />
+    <Compile Include="Models\DirectoryModel.cs" />
     <Compile Include="Models\IdentityModel.cs" />
     <Compile Include="Models\NewMoveRequestModel.cs" />
     <Compile Include="Models\SetMailboxNameModel.cs" />
@@ -203,6 +204,7 @@
     <Compile Include="Models\MSActorReturnMessageModel.cs" />
     <Compile Include="Models\NewADGroupModel.cs" />
     <Compile Include="Models\SetHomeDirectoryModel.cs" />
+    <Compile Include="Models\ShareModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

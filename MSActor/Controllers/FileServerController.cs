@@ -8,6 +8,7 @@ using System.Management.Automation;
 using System.Management.Automation.Remoting;
 using System.Management.Automation.Runspaces;
 using System.Security;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace MSActor.Controllers
@@ -26,72 +27,163 @@ namespace MSActor.Controllers
             util = new UtilityController();
         }
 
-        public MSActorReturnMessageModel NewDirectory(string path)
+        public MSActorReturnMessageModel NewDirectory(string computername, string path)
         {
             try
             {
                 PSSessionOption option = new PSSessionOption();
-                string url = "http://spufs01/powershell/ ";
-                System.Uri uri = new Uri(url);
-
-                Runspace runspace = RunspaceFactory.CreateRunspace();
-
+                string url = String.Format("http://{0}:5985/wsman", computername);
+                Uri uri = new Uri(url);
+                WSManConnectionInfo conn = new WSManConnectionInfo(uri);
+                Runspace runspace = RunspaceFactory.CreateRunspace(conn);
+                runspace.Open();
+               
                 PowerShell powershell = PowerShell.Create();
                 PSCommand command = new PSCommand();
-                command.AddCommand("New-PSSession");
-                command.AddParameter("ComputerName", "spufs01.spudev.corp");
-                command.AddParameter("Authentication", "Default");
-                powershell.Commands = command;
-                runspace.Open();
-                powershell.Runspace = runspace;
-                Collection<PSSession> result = powershell.Invoke<PSSession>();
-
-                powershell = PowerShell.Create();
-                command = new PSCommand();
-                command.AddCommand("Set-Variable");
-                command.AddParameter("Name", "s");
-                command.AddParameter("Value", result[0]);
-                powershell.Commands = command;
-                powershell.Runspace = runspace;
-                powershell.Invoke();
-
-                powershell = PowerShell.Create();
-                command = new PSCommand();
-                command.AddScript("enter-PSSession $s");
-                powershell.Commands = command;
-                powershell.Runspace = runspace;
-                powershell.Invoke();
-                
-                powershell = PowerShell.Create();
-                command = new PSCommand();
-                command.AddCommand("new-item");
-                command.AddParameter("itemtype", "directory");
-                Debug.WriteLine("Path is : " + path);
-                command.AddParameter("path", path);
+                command.AddCommand("New-Item");
+                command.AddParameter("ItemType", "directory");
+                command.AddParameter("Path", path);
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 Collection<PSObject> returns = powershell.Invoke();
-                Debug.WriteLine("Boy for your sake I hope this is a 1: " + returns.Count);
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
-                /*Debug.WriteLine("Ok it's the removal that's hosing me");
-                powershell = PowerShell.Create();
-                command = new PSCommand();
-                command.AddScript("remove-pssession $s");
-                powershell.Commands = command;
-                powershell.Runspace = runspace;
-                powershell.Invoke();*/
-
-                Debug.WriteLine("end of create folder");
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
             }
             catch(Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, "");
-                Debug.WriteLine("First of all, you're dumb and ugly: " + e.Message);
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                Debug.WriteLine("ERROR: " + e.Message);
                 return errorMessage;
             }
             
+        }
+
+        public MSActorReturnMessageModel RemoveDirectory(string computername, string path)
+        {
+            try
+            {
+                PSSessionOption option = new PSSessionOption();
+                string url = String.Format("http://{0}:5985/wsman", computername);
+                Uri uri = new Uri(url);
+                WSManConnectionInfo conn = new WSManConnectionInfo(uri);
+                Runspace runspace = RunspaceFactory.CreateRunspace(conn);
+                runspace.Open();
+
+                PowerShell powershell = PowerShell.Create();
+                PSCommand command = new PSCommand();
+                command.AddCommand("Remove-Item");
+                command.AddParameter("Path", path);
+                command.AddParameter("Recurse");
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
+            }
+            catch (Exception e)
+            {
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                Debug.WriteLine("ERROR: " + e.Message);
+                return errorMessage;
+            }
+
+        }
+
+
+        public MSActorReturnMessageModel AddNetShare(string name, string computername, string path)
+        {
+            MSActorReturnMessageModel successMessage;
+
+            try
+            {
+                PSSessionOption option = new PSSessionOption();
+                string url = String.Format("http://{0}:5985/wsman", computername);
+                Uri uri = new Uri(url);
+                WSManConnectionInfo conn = new WSManConnectionInfo(uri);
+                Runspace runspace = RunspaceFactory.CreateRunspace(conn);
+                runspace.Open();
+
+                PowerShell powershell = PowerShell.Create();
+                PSCommand command = new PSCommand();
+                string script = String.Format("net share {0}={1} \"/GRANT:Everyone,Full\"", name, path);
+                command.AddScript(script);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    if (powershell.Streams.Error[0].FullyQualifiedErrorId == "NativeCommandError")
+                    {
+                        // If the share already exists it might be okay (see "else" below). Otherwise this is an error.
+                        if (powershell.Streams.Error[0].Exception.Message != "The name has already been shared.")
+                        {
+                            System.Text.StringBuilder msgBuilder = new System.Text.StringBuilder();
+                            foreach (ErrorRecord errorRec in powershell.Streams.Error)
+                            {
+                                // Kludge to fix a weird bug with blank lines in the error output
+                                if (errorRec.CategoryInfo.ToString() == errorRec.Exception.Message)
+                                {
+                                    msgBuilder.AppendLine();
+                                }
+                                else
+                                {
+                                    msgBuilder.AppendLine(errorRec.Exception.Message);
+                                }
+                            }
+                            throw new Exception(msgBuilder.ToString());
+                        }
+                        else
+                        {
+                            // Check that the existing share has the same path
+                            command = new PSCommand();
+                            script = String.Format("net share {0}", name);
+                            command.AddScript(script);
+                            powershell.Commands = command;
+                            powershell.Runspace = runspace;
+                            Collection<PSObject> ret = powershell.Invoke();
+                            // Find the first (hopefully only) line in the output with "Path" at the beginning
+                            string pathResultLine = ret.First(x => (x.BaseObject as string).StartsWith("Path")).BaseObject as string;
+                            // Separate the line into (Non-words)[bunch of spaces](Rest of line)
+                            GroupCollection groups = Regex.Match(pathResultLine, @"(\S+)\s+(.+)$").Groups;
+                            // The (Rest of line) part of the separation is the path value
+                            string pathResult = groups[2].Value;
+                            if (pathResult == path)
+                            {
+                                successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                                return successMessage;
+                            }
+                            else
+                            {
+                                throw new Exception(String.Format("Share '{0}' already exists for a different path '{1}'.", name, pathResult));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                }
+
+                successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
+
+            }
+            catch (Exception e)
+            {
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                Debug.WriteLine("ERROR: " + e.Message);
+                return errorMessage;
+            }
         }
 
         public MSActorReturnMessageModel UserFolderAddAccessDriver(string path, string samaccountname)
@@ -99,7 +191,14 @@ namespace MSActor.Controllers
             try
             {
 
-                Runspace runspace = util.ConnectRemotePSSession("http://spufs01/powershell/ ");
+                //Runspace runspace = util.ConnectRemotePSSession("http://spufs01/powershell/ ");
+
+                PSSessionOption option = new PSSessionOption();
+                string url = "http://spufs01:5985/wsman";
+                Uri uri = new Uri(url);
+                WSManConnectionInfo conn = new WSManConnectionInfo(uri);
+                Runspace runspace = RunspaceFactory.CreateRunspace(conn);
+                runspace.Open();
 
                 PowerShell powershell = PowerShell.Create();
                 PSCommand command = new PSCommand();
@@ -110,6 +209,10 @@ namespace MSActor.Controllers
                 powershell.Runspace = runspace;
                 Collection<PSSession> result = powershell.Invoke<PSSession>();
                 powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 powershell = PowerShell.Create();
                 command = new PSCommand();
@@ -119,17 +222,23 @@ namespace MSActor.Controllers
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 powershell = PowerShell.Create();
                 command = new PSCommand();
                 command.AddScript("new-object system.security.accesscontrol.filesystemaccessrule(" +
                     "\"" + samaccountname + "\",\"FullControl\",\"ContainerInherit, ObjectInherit\",\"None\",\"Allow\")");
-                
                 powershell.Commands = command;
                 runspace.Open();
                 powershell.Runspace = runspace;
                 Collection<PSSession> permCol = powershell.Invoke<PSSession>();
-                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 powershell = PowerShell.Create();
                 command = new PSCommand();
@@ -139,6 +248,10 @@ namespace MSActor.Controllers
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 powershell = PowerShell.Create();
                 command = new PSCommand();
@@ -146,8 +259,11 @@ namespace MSActor.Controllers
                 powershell.Commands = command;
                 runspace.Open();
                 powershell.Runspace = runspace;
-                powershell.Invoke<PSSession>();
                 powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 powershell = PowerShell.Create();
                 command = new PSCommand();
@@ -155,15 +271,18 @@ namespace MSActor.Controllers
                 powershell.Commands = command;
                 runspace.Open();
                 powershell.Runspace = runspace;
-                powershell.Invoke<PSSession>();
                 powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, "");
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
                 return errorMessage;
             }
         }
