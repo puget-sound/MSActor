@@ -79,12 +79,55 @@ namespace MSActor.Controllers
                 command.AddCommand("Remove-Item");
                 command.AddParameter("Path", path);
                 command.AddParameter("Recurse");
+                command.AddParameter("Force");
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
+
                 if (powershell.Streams.Error.Count > 0)
                 {
-                    throw powershell.Streams.Error[0].Exception;
+                    RemoteException ex = powershell.Streams.Error[0].Exception as RemoteException;
+                    if (ex.SerializedRemoteException.TypeNames.Contains("Deserialized.System.IO.PathTooLongException"))
+                    {
+                        PowerShell powershell1 = PowerShell.Create();
+                        PSCommand command1 = new PSCommand();
+                        command1.AddCommand("Set-ExecutionPolicy");
+                        command1.AddParameter("ExecutionPolicy", "RemoteSigned");
+                        command1.AddParameter("Scope", "Process");
+                        command1.AddParameter("Force");
+                        powershell1.Commands = command1;
+                        powershell1.Runspace = runspace;
+                        powershell1.Invoke();
+                        if (powershell1.Streams.Error.Count > 0)
+                        {
+                            throw powershell1.Streams.Error[0].Exception;
+                        }
+
+                        command1 = new PSCommand();
+                        command1.AddScript(". D:\\PathTooLong.ps1");
+                        powershell1.Commands = command1;
+                        powershell1.Runspace = runspace;
+                        powershell1.Invoke();
+                        if (powershell1.Streams.Error.Count > 0)
+                        {
+                            throw powershell1.Streams.Error[0].Exception;
+                        }
+
+                        command1 = new PSCommand();
+                        command1.AddCommand("Remove-PathToLongDirectory");
+                        command1.AddArgument(path);
+                        powershell1.Commands = command1;
+                        powershell1.Runspace = runspace;
+                        powershell1.Invoke();
+                        if (powershell1.Streams.Error.Count > 0)
+                        {
+                            throw powershell1.Streams.Error[0].Exception;
+                        }
+                    }
+                    else
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
                 }
 
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
