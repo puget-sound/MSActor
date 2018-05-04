@@ -594,6 +594,13 @@
             <param name="input"></param>
             <returns></returns>
         </member>
+        <member name="M:MSActor.Controllers.MSActorController.RemoveNetShare(MSActor.Models.ShareModel)">
+            <summary>
+            Delete share for folder specified
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
         <member name="M:MSActor.Controllers.MSActorController.SetHomeDirectory(MSActor.Models.SetHomeDirectoryModel)">
             <summary>
             Creates a new Home Directory for the user

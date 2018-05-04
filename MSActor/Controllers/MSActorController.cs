@@ -122,6 +122,19 @@ namespace MSActor.Controllers
         }
 
         /// <summary>
+        /// Delete share for folder specified
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("removenetshare")]
+        [HttpPost]
+        public MSActorReturnMessageModel RemoveNetShare([FromBody] ShareModel input)
+        {
+            FileServerController control = new FileServerController();
+            return control.RemoveNetShare(input.name, input.computername, input.path);
+        }
+
+        /// <summary>
         /// Creates a new Home Directory for the user
         /// </summary>
         /// <param name="input"></param>
