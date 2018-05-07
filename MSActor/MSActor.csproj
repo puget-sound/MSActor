@@ -211,8 +211,6 @@
     <Compile Include="Models\JsonErrorModel.cs" />
     <Compile Include="Models\MSActorReturnMessageModel.cs" />
     <Compile Include="Models\NewADGroupModel.cs" />
-    <Compile Include="Models\RemoveADGroupMemberModel.cs" />
-    <Compile Include="Models\RemoveADGroupModel.cs" />
     <Compile Include="Models\RemoveADObjectModel.cs" />
     <Compile Include="Models\SetHomeDirectoryModel.cs" />
     <Compile Include="Models\ShareModel.cs" />
