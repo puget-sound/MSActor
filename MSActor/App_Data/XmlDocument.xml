@@ -530,6 +530,29 @@
             <param name="group_scope"></param>
             <returns></returns>
         </member>
+        <member name="M:MSActor.Controllers.ADController.RemoveADGroup(System.String)">
+            <summary>
+            This method removes an existing AD group
+            </summary>
+            <param name="group_identity"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.ADController.AddADGroupMember(System.String,System.String)">
+            <summary>
+            Add user to an AD group
+            </summary>
+            <param name="group_identity"></param>
+            <param name="group_member"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.ADController.RemoveADGroupMember(System.String,System.String)">
+            <summary>
+            Remove user from an AD group
+            </summary>
+            <param name="group_identity"></param>
+            <param name="group_member"></param>
+            <returns></returns>
+        </member>
         <member name="T:MSActor.Controllers.FileServerController">
             <summary>
             A class to hold all the File Server related methods
@@ -645,7 +668,28 @@
         </member>
         <member name="M:MSActor.Controllers.MSActorController.NewADGroup(MSActor.Models.NewADGroupModel)">
             <summary>
-            Creates a new AD Group
+            Creates a new AD group
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.RemoveADGroup(MSActor.Models.RemoveADGroupModel)">
+            <summary>
+            Removes an existing AD group
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.AddADGroupMember(MSActor.Models.AddADGroupMemberModel)">
+            <summary>
+            Add user to an AD group
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.RemoveADGroupMember(MSActor.Models.RemoveADGroupMemberModel)">
+            <summary>
+            Remove user from an AD group
             </summary>
             <param name="input"></param>
             <returns></returns>

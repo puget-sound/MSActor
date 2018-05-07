@@ -190,11 +190,14 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\AddADGroupMemberModel.cs" />
     <Compile Include="Models\ADUserModel.cs" />
     <Compile Include="Models\ChangeUserValueJsonModel.cs" />
     <Compile Include="Models\DirectoryModel.cs" />
     <Compile Include="Models\DirectoryQuotaModel.cs" />
     <Compile Include="Models\GroupFolderAccessModel.cs" />
+    <Compile Include="Models\RemoveADGroupMemberModel.cs" />
+    <Compile Include="Models\RemoveADGroupModel.cs" />
     <Compile Include="Models\UserFolderAccessModel.cs" />
     <Compile Include="Models\IdentityModel.cs" />
     <Compile Include="Models\NewMoveRequestModel.cs" />

@@ -118,7 +118,7 @@ namespace MSActor.Models
         }
 
 
-        public string ToString()
+        public override string ToString()
         {
             string toReturn = "";
             
