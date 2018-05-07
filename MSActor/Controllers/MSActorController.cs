@@ -88,10 +88,75 @@ namespace MSActor.Controllers
         /// <returns></returns>
         [Route("newdirectory")]
         [HttpPost]
-        public MSActorReturnMessageModel NewDirectory([FromBody] CreateFolderModel input)
+        public MSActorReturnMessageModel NewDirectory([FromBody] DirectoryModel input)
         {
             FileServerController control = new FileServerController();
-            return control.NewDirectory(input.path);
+            return control.NewDirectory(input.computername, input.path);
+        }
+
+        /// <summary>
+        /// Delete folder specified
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("removedirectory")]
+        [HttpPost]
+        public MSActorReturnMessageModel RemoveDirectory([FromBody] DirectoryModel input)
+        {
+            FileServerController control = new FileServerController();
+            return control.RemoveDirectory(input.computername, input.path);
+        }
+
+        /// <summary>
+        /// Create share for folder specified
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("addnetshare")]
+        [HttpPost]
+        public MSActorReturnMessageModel AddNetShare([FromBody] ShareModel input)
+        {
+            FileServerController control = new FileServerController();
+            return control.AddNetShare(input.name, input.computername, input.path);
+        }
+
+        /// <summary>
+        /// Delete share for folder specified
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("removenetshare")]
+        [HttpPost]
+        public MSActorReturnMessageModel RemoveNetShare([FromBody] ShareModel input)
+        {
+            FileServerController control = new FileServerController();
+            return control.RemoveNetShare(input.name, input.computername, input.path);
+        }
+
+        /// <summary>
+        /// Grant specified access to this folder for specified User
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("adduserfolderaccess")]
+        [HttpPost]
+        public MSActorReturnMessageModel AddUserFolderAccess([FromBody] FolderAccessModel input)
+        {
+            FileServerController control = new FileServerController();
+            return control.AddUserFolderAccess(input.employeeid, input.samaccountname, input.computername, input.path, input.accesstype);
+        }
+
+        /// <summary>
+        /// Add quota on specified folder
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("adddirquota")]
+        [HttpPost]
+        public MSActorReturnMessageModel AddDirQuota([FromBody] DirectoryQuotaModel input)
+        {
+            FileServerController control = new FileServerController();
+            return control.AddDirQuota(input.computername, input.path, input.limit);
         }
 
         /// <summary>
@@ -209,6 +274,70 @@ namespace MSActor.Controllers
         {
             ADController control = new ADController();
             return control.SetIPPhone(input.employeeid, input.samaccountname, input.ipphone);
+        }
+
+        /// Sets quotas on mailboxes
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("setmailboxquotas")]
+        [HttpPost]
+        public MSActorReturnMessageModel SetMailboxQuotas([FromBody] SetMailboxQuotasModel input)
+        {
+            ExchangeController control = new ExchangeController();
+            return control.SetMailboxQuotas(input.identity, input.prohibitsendreceivequota, input.prohibitsendquota, input.issuewarningquota);
+        }
+
+        /// <summary>
+        /// Changes alias on mailbox
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("setmailboxname")]
+        [HttpPost]
+        public MSActorReturnMessageModel SetMailboxName([FromBody] SetMailboxNameModel input)
+        {
+            ExchangeController control = new ExchangeController();
+            return control.SetMailboxName(input.identity, input.alias, input.addemailaddress);
+        }
+
+        /// <summary>
+        /// Makes a new request to move mailbox from one database to another
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("newmoverequest")]
+        [HttpPost]
+        public MSActorReturnMessageModel NewMoveRequest([FromBody] NewMoveRequestModel input)
+        {
+            ExchangeController control = new ExchangeController();
+            return control.NewMoveRequest(input.identity, input.targetdatabase);
+        }
+
+        /// <summary>
+        /// Checks on status of mailbox move request
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("getmoverequest")]
+        [HttpPost]
+        public MSActorReturnMessageModel GetMoveRequest([FromBody] IdentityModel input)
+        {
+            ExchangeController control = new ExchangeController();
+            return control.GetMoveRequest(input.identity);
+        }
+
+        /// <summary>
+        /// Removes a mailbox
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("disablemailbox")]
+        [HttpPost]
+        public MSActorReturnMessageModel DisableMailbox([FromBody] IdentityModel input)
+        {
+            ExchangeController control = new ExchangeController();
+            return control.DisableMailbox(input.identity);
         }
     }
 }

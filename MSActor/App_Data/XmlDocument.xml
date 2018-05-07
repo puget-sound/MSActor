@@ -573,9 +573,44 @@
             <param name="input"></param>
             <returns></returns>
         </member>
-        <member name="M:MSActor.Controllers.MSActorController.NewDirectory(MSActor.Models.CreateFolderModel)">
+        <member name="M:MSActor.Controllers.MSActorController.NewDirectory(MSActor.Models.DirectoryModel)">
             <summary>
             Creates a Folder on the file server at the given file path
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.RemoveDirectory(MSActor.Models.DirectoryModel)">
+            <summary>
+            Delete folder specified
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.AddNetShare(MSActor.Models.ShareModel)">
+            <summary>
+            Create share for folder specified
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.RemoveNetShare(MSActor.Models.ShareModel)">
+            <summary>
+            Delete share for folder specified
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.AddUserFolderAccess(MSActor.Models.FolderAccessModel)">
+            <summary>
+            Grant specified access to this folder for specified User
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.AddDirQuota(MSActor.Models.DirectoryQuotaModel)">
+            <summary>
+            Add quota on specified folder
             </summary>
             <param name="input"></param>
             <returns></returns>
@@ -590,6 +625,41 @@
         <member name="M:MSActor.Controllers.MSActorController.NewADGroup(MSActor.Models.NewADGroupModel)">
             <summary>
             Creates a new AD Group
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.SetMailboxQuotas(MSActor.Models.SetMailboxQuotasModel)">
+            <summary>
+            Sets quotas on mailboxes
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.SetMailboxName(MSActor.Models.SetMailboxNameModel)">
+            <summary>
+            Changes alias on mailbox
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.NewMoveRequest(MSActor.Models.NewMoveRequestModel)">
+            <summary>
+            Makes a new request to move mailbox from one database to another
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.GetMoveRequest(MSActor.Models.IdentityModel)">
+            <summary>
+            Checks on status of mailbox move request
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.DisableMailbox(MSActor.Models.IdentityModel)">
+            <summary>
+            Removes a mailbox
             </summary>
             <param name="input"></param>
             <returns></returns>

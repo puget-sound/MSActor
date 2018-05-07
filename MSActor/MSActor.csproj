@@ -192,6 +192,13 @@
     </Compile>
     <Compile Include="Models\ADUserModel.cs" />
     <Compile Include="Models\ChangeUserValueJsonModel.cs" />
+    <Compile Include="Models\DirectoryModel.cs" />
+    <Compile Include="Models\DirectoryQuotaModel.cs" />
+    <Compile Include="Models\FolderAccessModel.cs" />
+    <Compile Include="Models\IdentityModel.cs" />
+    <Compile Include="Models\NewMoveRequestModel.cs" />
+    <Compile Include="Models\SetMailboxNameModel.cs" />
+    <Compile Include="Models\SetMailboxQuotasModel.cs" />
     <Compile Include="Models\CreateFolderModel.cs" />
     <Compile Include="Models\EmplidModel.cs" />
     <Compile Include="Models\EnableMailboxModel.cs" />
@@ -199,6 +206,7 @@
     <Compile Include="Models\MSActorReturnMessageModel.cs" />
     <Compile Include="Models\NewADGroupModel.cs" />
     <Compile Include="Models\SetHomeDirectoryModel.cs" />
+    <Compile Include="Models\ShareModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -271,6 +279,9 @@
   <ItemGroup>
     <None Include="packages.config" />
     <Content Include="Scripts\jquery-1.10.2.min.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
