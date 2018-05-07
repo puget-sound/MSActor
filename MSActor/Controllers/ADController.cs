@@ -264,13 +264,100 @@ namespace MSActor.Controllers
             try
             {
                 PowerShell ex = PowerShell.Create();
-                ex.AddCommand("new-adgroup");
+                ex.AddCommand("New-ADGroup");
                 ex.AddParameter("name", group_name);
                 ex.AddParameter("description", group_description);
                 ex.AddParameter("groupcategory", group_category);
                 ex.AddParameter("displayname", group_info);
                 ex.AddParameter("path", group_ad_path);
                 ex.AddParameter("groupscope", group_scope);
+                if (group_category == "distribution")
+                {
+                    ex.AddStatement();
+                    ex.AddCommand("enable-distributiongroup");
+                    ex.AddParameter("identity", group_name);
+                }
+                ex.Invoke();
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
+            }
+            catch (Exception e)
+            {
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                return errorMessage;
+            }
+        }
+
+        /// <summary>
+        /// This method removes an existing AD group
+        /// </summary>
+        /// <param name="group_identity"></param>
+        /// <returns></returns>
+        public MSActorReturnMessageModel RemoveADGroup(string group_identity)
+        {
+            UtilityController util = new UtilityController();
+            try
+            {
+                PowerShell ex = PowerShell.Create();
+                ex.AddCommand("Remove-ADGroup");
+                ex.AddParameter("identity", group_identity);
+                ex.AddParameter("confirm", false);
+                ex.Invoke();
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
+            }
+            catch (Exception e)
+            {
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                return errorMessage;
+            }
+        }
+
+        /// <summary>
+        /// Add user to an AD group
+        /// </summary>
+        /// <param name="group_identity"></param>
+        /// <param name="group_member"></param>
+        /// <returns></returns>
+        public MSActorReturnMessageModel AddADGroupMember(string group_identity, string group_member)
+        {
+            UtilityController util = new UtilityController();
+            try
+            {
+                PowerShell ex = PowerShell.Create();
+                ex.AddCommand("Add-ADGroupMember");
+                ex.AddParameter("identity", group_identity);
+                ex.AddParameter("member", group_member);
+                ex.Invoke();
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
+            }
+            catch (Exception e)
+            {
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                return errorMessage;
+            }
+        }
+
+        /// <summary>
+        /// Remove user from an AD group
+        /// </summary>
+        /// <param name="group_identity"></param>
+        /// <param name="group_member"></param>
+        /// <returns></returns>
+        public MSActorReturnMessageModel RemoveADGroupMember(string group_identity, string group_member)
+        {
+            UtilityController util = new UtilityController();
+            try
+            {
+                PowerShell ex = PowerShell.Create();
+                ex.AddCommand("Remove-ADGroupMember");
+                ex.AddParameter("identity", group_identity);
+                ex.AddParameter("member", group_member);
+                ex.AddParameter("confirm", false);
                 ex.Invoke();
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;

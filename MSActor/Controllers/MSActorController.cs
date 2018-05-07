@@ -47,7 +47,6 @@ namespace MSActor.Controllers
             return control.NewADUserDriver(newUser);
         }
 
-
         /// <summary>
         /// This method changes the value of a field on a user in AD. 
         /// </summary>
@@ -81,6 +80,7 @@ namespace MSActor.Controllers
             ExchangeController control = new ExchangeController();
             return control.EnableMailboxDriver(input.database, input.alias, input.emailaddresses);
         }
+
         /// <summary>
         /// Creates a Folder on the file server at the given file path
         /// </summary>
@@ -108,7 +108,7 @@ namespace MSActor.Controllers
         }
 
         /// <summary>
-        /// Creates a new AD Group
+        /// Creates a new AD group
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
@@ -120,5 +120,95 @@ namespace MSActor.Controllers
             return control.NewADGroup(input.name, input.description, input.info, input.path, input.groupcategory, input.groupscope);
         }
 
+        /// <summary>
+        /// Removes an existing AD group
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("removeadgroup")]
+        [HttpPost]
+        public MSActorReturnMessageModel RemoveADGroup([FromBody] RemoveADGroupModel input)
+        {
+            ADController control = new ADController();
+            return control.RemoveADGroup(input.identity);
+        }
+
+        /// <summary>
+        /// Add user to an AD group
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("addadgroupmember")]
+        [HttpPost]
+        public MSActorReturnMessageModel AddADGroupMember([FromBody] AddADGroupMemberModel input)
+        {
+            ADController control = new ADController();
+            return control.AddADGroupMember(input.identity, input.member);
+        }
+
+        /// <summary>
+        /// Remove user from an AD group
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("removeadgroupmember")]
+        [HttpPost]
+        public MSActorReturnMessageModel RemoveADGroupMember([FromBody] RemoveADGroupMemberModel input)
+        {
+            ADController control = new ADController();
+            return control.RemoveADGroupMember(input.identity, input.member);
+        }
+
+        /// <summary>
+        /// Set password
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("setpassword")]
+        [HttpPost]
+        public MSActorReturnMessageModel SetPassword([FromBody] SetPasswordModel input)
+        {
+            ADController control = new ADController();
+            return control.SetPassword(input.employeeid, input.samaccountname, input.accountpassword, input.changepasswordatlogon);
+        }
+
+        /// <summary>
+        /// ...
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("removeadobject")]
+        [HttpPost]
+        public MSActorReturnMessageModel RemoveADObject([FromBody] RemoveADObjectModel input)
+        {
+            ADController control = new ADController();
+            return control.RemoveADObject(input.employeeid, input.samaccountname);
+        }
+
+        /// <summary>
+        /// ...
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("changeusername")]
+        [HttpPost]
+        public MSActorReturnMessageModel ChangeUsername([FromBody] ChangeUsernameModel input)
+        {
+            ADController control = new ADController();
+            return control.ChangeUsername(input.employeeid, input.searchbase, input.samaccountname, input.userprincipalname);
+        }
+
+        /// <summary>
+        /// ...
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("setipphone")]
+        [HttpPost]
+        public MSActorReturnMessageModel SetIPPhone([FromBody] SetIPPhoneModel input)
+        {
+            ADController control = new ADController();
+            return control.SetIPPhone(input.employeeid, input.samaccountname, input.ipphone);
+        }
     }
 }
