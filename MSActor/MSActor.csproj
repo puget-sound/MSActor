@@ -194,9 +194,11 @@
     <Compile Include="Models\ChangeUserValueJsonModel.cs" />
     <Compile Include="Models\DirectoryModel.cs" />
     <Compile Include="Models\DirectoryQuotaModel.cs" />
-    <Compile Include="Models\FolderAccessModel.cs" />
+    <Compile Include="Models\GroupFolderAccessModel.cs" />
+    <Compile Include="Models\UserFolderAccessModel.cs" />
     <Compile Include="Models\IdentityModel.cs" />
     <Compile Include="Models\NewMoveRequestModel.cs" />
+    <Compile Include="Models\RenameDirectoryModel.cs" />
     <Compile Include="Models\SetMailboxNameModel.cs" />
     <Compile Include="Models\SetMailboxQuotasModel.cs" />
     <Compile Include="Models\CreateFolderModel.cs" />

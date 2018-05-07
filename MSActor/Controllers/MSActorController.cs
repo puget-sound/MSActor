@@ -109,6 +109,19 @@ namespace MSActor.Controllers
         }
 
         /// <summary>
+        /// Rename folder specified
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("renamedirectory")]
+        [HttpPost]
+        public MSActorReturnMessageModel RenameDirectory([FromBody] RenameDirectoryModel input)
+        {
+            FileServerController control = new FileServerController();
+            return control.RenameDirectory(input.computername, input.path, input.newname);
+        }
+
+        /// <summary>
         /// Create share for folder specified
         /// </summary>
         /// <param name="input"></param>
@@ -141,10 +154,23 @@ namespace MSActor.Controllers
         /// <returns></returns>
         [Route("adduserfolderaccess")]
         [HttpPost]
-        public MSActorReturnMessageModel AddUserFolderAccess([FromBody] FolderAccessModel input)
+        public MSActorReturnMessageModel AddUserFolderAccess([FromBody] UserFolderAccessModel input)
         {
             FileServerController control = new FileServerController();
             return control.AddUserFolderAccess(input.employeeid, input.samaccountname, input.computername, input.path, input.accesstype);
+        }
+
+        /// <summary>
+        /// Grant specified access to this folder for specified group
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("addgroupfolderaccess")]
+        [HttpPost]
+        public MSActorReturnMessageModel AddGroupFolderAccess([FromBody] GroupFolderAccessModel input)
+        {
+            FileServerController control = new FileServerController();
+            return control.AddGroupFolderAccess(input.groupname, input.computername, input.path, input.accesstype);
         }
 
         /// <summary>
@@ -158,6 +184,19 @@ namespace MSActor.Controllers
         {
             FileServerController control = new FileServerController();
             return control.AddDirQuota(input.computername, input.path, input.limit);
+        }
+
+        /// <summary>
+        /// Modify quota on specified folder
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("modifydirquota")]
+        [HttpPost]
+        public MSActorReturnMessageModel ModifyDirQuota([FromBody] DirectoryQuotaModel input)
+        {
+            FileServerController control = new FileServerController();
+            return control.ModifyDirQuota(input.computername, input.path, input.limit);
         }
 
         /// <summary>

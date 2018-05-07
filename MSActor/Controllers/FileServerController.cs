@@ -92,6 +92,7 @@ namespace MSActor.Controllers
                     RemoteException ex = powershell.Streams.Error[0].Exception as RemoteException;
                     if (ex.SerializedRemoteException.TypeNames.Contains("Deserialized.System.IO.PathTooLongException"))
                     {
+                        // Run our script for extra long paths instead
                         PowerShell powershell1 = PowerShell.Create();
                         PSCommand command1 = new PSCommand();
                         command1.AddCommand("Set-ExecutionPolicy");
@@ -145,6 +146,39 @@ namespace MSActor.Controllers
 
         }
 
+        public MSActorReturnMessageModel RenameDirectory(string computername, string path, string newname)
+        {
+            try
+            {
+                PSSessionOption option = new PSSessionOption();
+                string url = String.Format("http://{0}:5985/wsman", computername);
+                Uri uri = new Uri(url);
+                WSManConnectionInfo conn = new WSManConnectionInfo(uri);
+                Runspace runspace = RunspaceFactory.CreateRunspace(conn);
+                runspace.Open();
+
+                PowerShell powershell = PowerShell.Create();
+                PSCommand command = new PSCommand();
+                command.AddCommand("Rename-Item");
+                command.AddParameter("Path", path);
+                command.AddParameter("NewName", newname);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+                
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
+            }
+            catch (Exception e)
+            {
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                return errorMessage;
+            }
+        }
         public MSActorReturnMessageModel AddNetShare(string name, string computername, string path)
         {
             MSActorReturnMessageModel successMessage;
@@ -198,9 +232,17 @@ namespace MSActor.Controllers
                             Collection<PSObject> ret = powershell.Invoke();
                             // Find the first (hopefully only) line in the output with "Path" at the beginning
                             string pathResultLine = ret.First(x => (x.BaseObject as string).StartsWith("Path")).BaseObject as string;
-                            // Separate the line into (Non-words)[bunch of spaces](Rest of line)
+                            // The output looks like "Path              D:\Users\srenker".
+                            // The regular expression below separates this into groups.
+                            // Meaning of the next regex (from left to right):
+                            // 1. Save all the characters that are not blanks into a group. (\S+)
+                            // 2. Skip over all characters that are blanks. \s+
+                            // 3. Save all the other characters into a group, up to end of line. (.+)$
+                            // It's done this way because the path may have a space embedded in the name.
+                            // The @ before the string tells C# not to escape any characters before passing it
+                            // to the regular expression processor.
                             GroupCollection groups = Regex.Match(pathResultLine, @"(\S+)\s+(.+)$").Groups;
-                            // The (Rest of line) part of the separation is the path value
+                            // Group 2 (#3 above) is the path value.
                             string pathResult = groups[2].Value;
                             if (pathResult == path)
                             {
@@ -288,9 +330,17 @@ namespace MSActor.Controllers
 
                 // Find the first (hopefully only) line in the output with "Path" at the beginning
                 string pathResultLine = ret.First(x => (x.BaseObject as string).StartsWith("Path")).BaseObject as string;
-                // Separate the line into (Non-words)[bunch of spaces](Rest of line)
+                // The output looks like "Path              D:\Users\srenker".
+                // The regular expression below separates this into groups.
+                // Meaning of the next regex (from left to right):
+                // 1. Save all the characters that are not blanks into a group. (\S+)
+                // 2. Skip over all characters that are blanks. \s+
+                // 3. Save all the other characters into a group, up to end of line. (.+)$
+                // It's done this way because the path may have a space embedded in the name.
+                // The @ before the string tells C# not to escape any characters before passing it
+                // to the regular expression processor.
                 GroupCollection groups = Regex.Match(pathResultLine, @"(\S+)\s+(.+)$").Groups;
-                // The (Rest of line) part of the separation is the path value
+                // Group 2 (#3 above) is the path value.
                 string existingPath = groups[2].Value;
                 if (path != existingPath)
                 {
@@ -341,6 +391,18 @@ namespace MSActor.Controllers
 
         public MSActorReturnMessageModel AddUserFolderAccess(string employeeid, string samaccountname, string computername, string path, string accesstype)
         {
+            PSObject user = util.getADUser(employeeid, samaccountname);
+            string identity = user.Properties["SamAccountName"].Value as string;
+            return AddFolderAccess(identity, computername, path, accesstype);
+        }
+
+        public MSActorReturnMessageModel AddGroupFolderAccess(string groupname, string computername, string path, string accesstype)
+        {
+            return AddFolderAccess(groupname, computername, path, accesstype);
+        }
+
+        private MSActorReturnMessageModel AddFolderAccess(string identity, string computername, string path, string accesstype)
+        {
             try
             {
                 PSSessionOption option = new PSSessionOption();
@@ -350,8 +412,10 @@ namespace MSActor.Controllers
                 Runspace runspace = RunspaceFactory.CreateRunspace(conn);
                 runspace.Open();
 
-                PSObject user = util.getADUser(employeeid, samaccountname);
-                string identity = user.Properties["SamAccountName"].Value as string;
+                // Note: The commands stacked on top of each other (prior to invoking) below have the effect
+                // of piping the output of one into the other, e.g. the result of Get-Acl becomes an input to Set-Variable.
+                // We need to work this way on a remote session so that type information does not get changed by
+                // retrieving the objects back to the local session.
 
                 PowerShell powershell = PowerShell.Create();
                 PSCommand command = new PSCommand();
@@ -462,9 +526,10 @@ namespace MSActor.Controllers
                         throw powershell.Streams.Error[0].Exception;
                     }
                 }
-                // The error message is not an error, how annoying!
+                // The return message may or may not be an error, how annoying!
+                // dirquota is not consistent with how many blank lines it returns before a message, so
+                // we search for the first returned line that is not blank.
                 string message = ret.First(x => (x.BaseObject as string).Length > 0).BaseObject as string;
-                // Switch statement in C# only works on constants
                 if (message == String.Format("Quota successfully created for \"{0}\".", path))
                 {
                     successMessage = new MSActorReturnMessageModel(SuccessCode, "");
@@ -504,24 +569,48 @@ namespace MSActor.Controllers
                             throw powershell1.Streams.Error[0].Exception;
                         }
                     }
+                    // Here we search through a bunch of lines returned to get to the one showing the quota limit.
                     string existingLimitLine = ret1.First(x => (x.BaseObject as String).StartsWith("Limit:")).BaseObject as string;
                     if (existingLimitLine == null)
                     {
-                        // Must have been an error
+                        // There was not a line in the output containing the quota, so we assume we got an error message instead.
                         string message1 = ret1.First(x => (x.BaseObject as string).Length > 0).BaseObject as string;
                         throw new Exception(message1);
                     }
                     else
                     {
-                        // Parse out the quota and see if it is the same
-                        // Separate the line into (Non-words)[bunch of spaces](Rest of line)"(Hard)"
+                        // Parse out the returned quota and see if it is the same.
+                        // The output looks like "Limit:                  10.00 GB (Hard)".
+                        // The regular expression below separates this into groups:
+                        // <-1-->                  <--2--->
+                        // Limit:                  10.00 GB (Hard)
+                        // Meaning of the next regex (from left to right):
+                        // 1. Save all the characters that are not blanks into a group. (\S+)
+                        // 2. Skip over all characters that are blanks. \s+
+                        // 3. Save all characters that are not matched below into a group. (.+)
+                        // 4. Skip a blank character followed by anything in parentheses. \s\(.+\)
+                        // 5. Anchor #4 to the end of the line at its right. $
+                        // The @ before the string tells C# not to escape any characters before passing it
+                        // to the regular expression processor.
                         GroupCollection groups = Regex.Match(existingLimitLine, @"(\S+)\s+(.+)\s\(.+\)$").Groups;
-                        // The (Rest of line) part of the separation is the quota, expressed as e.g. "10.00 GB"
+                        // The second group (#3 above) is the quota, expressed as e.g. "10.00 GB"
                         string existingLimit = groups[2].Value;
                         // Break out numeric and unit parts and compare them
-                        GroupCollection limitGroups = Regex.Match(limit, @"(\d+)\s*(\D+)").Groups;
+                        // Meaning of the next regex (from left to right):
+                        // 1. Save all characters that are decimal points or numerals into a group. ([.\d]+)
+                        // 2. Skip over all characters that are blank (there may be none). \s*
+                        // 3. Save all characters that are not numerals into a group. (\D+)
+                        // The @ before the string tells C# not to escape any characters before passing it
+                        // to the regular expression processor.
+                        GroupCollection limitGroups = Regex.Match(limit, @"([.\d]+)\s*(\D+)").Groups;
                         double limitNumber = double.Parse(limitGroups[1].Value);
                         string limitUnits = limitGroups[2].Value.ToUpper();
+                        // Meaning of the next regex (from left to right):
+                        // 1. Save all characters that are decimal points or numerals into a group. ([.\d]+)
+                        // 2. Skip over all characters that are blank (there may be none). \s*
+                        // 3. Save all characters that are not numerals into a group. (\D+)
+                        // The @ before the string tells C# not to escape any characters before passing it
+                        // to the regular expression processor.
                         GroupCollection existingLimitGroups = Regex.Match(existingLimit, @"([.\d]+)\s*(\D+)").Groups;
                         double existingLimitNumber = double.Parse(existingLimitGroups[1].Value);
                         string existingLimitUnits = existingLimitGroups[2].Value.ToUpper();
@@ -548,6 +637,71 @@ namespace MSActor.Controllers
                 return errorMessage;
             }
 
+        }
+
+        public MSActorReturnMessageModel ModifyDirQuota(string computername, string path, string limit)
+        {
+            MSActorReturnMessageModel errorMessage;
+
+            try
+            {
+                PSSessionOption option = new PSSessionOption();
+                string url = String.Format("http://{0}:5985/wsman", computername);
+                Uri uri = new Uri(url);
+                WSManConnectionInfo conn = new WSManConnectionInfo(uri);
+                Runspace runspace = RunspaceFactory.CreateRunspace(conn);
+                runspace.Open();
+
+                PowerShell powershell = PowerShell.Create();
+                PSCommand command = new PSCommand();
+                string script = String.Format("dirquota quota modify /path:\"{0}\" /limit:{1}", path, limit);
+                command.AddScript(script);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                Collection<PSObject> ret = powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    if (powershell.Streams.Error[0].FullyQualifiedErrorId == "NativeCommandError")
+                    {
+                        StringBuilder msgBuilder = new StringBuilder();
+                        foreach (ErrorRecord errorRec in powershell.Streams.Error)
+                        {
+                            // Kludge to fix a weird bug with blank lines in the error output
+                            if (errorRec.CategoryInfo.ToString() == errorRec.Exception.Message)
+                            {
+                                msgBuilder.AppendLine();
+                            }
+                            else
+                            {
+                                msgBuilder.AppendLine(errorRec.Exception.Message);
+                            }
+                        }
+                        throw new Exception(msgBuilder.ToString());
+                    }
+                    else
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                }
+                // The return message may or may not be an error, how annoying!
+                // dirquota is not consistent with how many blank lines it returns before a message, so
+                // we search for the first returned line that is not blank.
+                string message = ret.First(x => (x.BaseObject as string).Length > 0).BaseObject as string;
+                if (message == "Quotas modified successfully.")
+                {
+                    MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                    return successMessage;
+                }
+                else
+                {
+                    throw new Exception(message);
+                }
+            }
+            catch (Exception e)
+            {
+                errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                return errorMessage;
+            }
         }
     }
 }
