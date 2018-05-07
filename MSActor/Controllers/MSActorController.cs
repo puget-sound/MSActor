@@ -263,7 +263,7 @@ namespace MSActor.Controllers
             return control.RemoveADGroupMember(input.identity, input.member);
         }
 
-/*        /// <summary>
+        /// <summary>
         /// Set password
         /// </summary>
         /// <param name="input"></param>
@@ -274,9 +274,9 @@ namespace MSActor.Controllers
         {
             ADController control = new ADController();
             return control.SetPassword(input.employeeid, input.samaccountname, input.accountpassword, input.changepasswordatlogon);
-        } */
+        }
 
-/*        /// <summary>
+        /// <summary>
         /// ...
         /// </summary>
         /// <param name="input"></param>
@@ -287,9 +287,9 @@ namespace MSActor.Controllers
         {
             ADController control = new ADController();
             return control.RemoveADObject(input.employeeid, input.samaccountname);
-        } */
+        } 
 
-/*        /// <summary>
+        /// <summary>
         /// ...
         /// </summary>
         /// <param name="input"></param>
@@ -300,9 +300,9 @@ namespace MSActor.Controllers
         {
             ADController control = new ADController();
             return control.ChangeUsername(input.employeeid, input.searchbase, input.samaccountname, input.userprincipalname);
-        } */
+        } 
 
-/*        /// <summary>
+        /// <summary>
         /// ...
         /// </summary>
         /// <param name="input"></param>
@@ -313,7 +313,7 @@ namespace MSActor.Controllers
         {
             ADController control = new ADController();
             return control.SetIPPhone(input.employeeid, input.samaccountname, input.ipphone);
-        } */
+        }
 
         /// <summary>
         /// Sets quotas on mailboxes
