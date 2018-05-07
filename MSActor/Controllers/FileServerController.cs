@@ -1,5 +1,6 @@
 ﻿using MSActor.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -8,6 +9,8 @@ using System.Management.Automation;
 using System.Management.Automation.Remoting;
 using System.Management.Automation.Runspaces;
 using System.Security;
+using System.Security.AccessControl;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 
@@ -169,7 +172,7 @@ namespace MSActor.Controllers
                         // If the share already exists it might be okay (see "else" below). Otherwise this is an error.
                         if (powershell.Streams.Error[0].Exception.Message != "The name has already been shared.")
                         {
-                            System.Text.StringBuilder msgBuilder = new System.Text.StringBuilder();
+                            StringBuilder msgBuilder = new StringBuilder();
                             foreach (ErrorRecord errorRec in powershell.Streams.Error)
                             {
                                 // Kludge to fix a weird bug with blank lines in the error output
@@ -261,7 +264,7 @@ namespace MSActor.Controllers
                         }
                         else
                         {
-                            System.Text.StringBuilder msgBuilder = new System.Text.StringBuilder();
+                            StringBuilder msgBuilder = new StringBuilder();
                             foreach (ErrorRecord errorRec in powershell.Streams.Error)
                             {
                                 // Kludge to fix a weird bug with blank lines in the error output
@@ -304,7 +307,7 @@ namespace MSActor.Controllers
                 {
                     if (powershell.Streams.Error[0].FullyQualifiedErrorId == "NativeCommandError")
                     {
-                        System.Text.StringBuilder msgBuilder = new System.Text.StringBuilder();
+                        StringBuilder msgBuilder = new StringBuilder();
                         foreach (ErrorRecord errorRec in powershell.Streams.Error)
                         {
                             // Kludge to fix a weird bug with blank lines in the error output
@@ -336,65 +339,58 @@ namespace MSActor.Controllers
             }
         }
 
-        public MSActorReturnMessageModel AddUserFolderAccess(string computername, string path, string samaccountname)
+        public MSActorReturnMessageModel AddUserFolderAccess(string employeeid, string samaccountname, string computername, string path, string accesstype)
         {
             try
             {
-
-                //Runspace runspace = util.ConnectRemotePSSession("http://spufs01/powershell/ ");
-
                 PSSessionOption option = new PSSessionOption();
-                string url = "http://spufs01:5985/wsman";
+                string url = String.Format("http://{0}:5985/wsman", computername);
                 Uri uri = new Uri(url);
                 WSManConnectionInfo conn = new WSManConnectionInfo(uri);
                 Runspace runspace = RunspaceFactory.CreateRunspace(conn);
                 runspace.Open();
 
+                PSObject user = util.getADUser(employeeid, samaccountname);
+                string identity = user.Properties["SamAccountName"].Value as string;
+
                 PowerShell powershell = PowerShell.Create();
                 PSCommand command = new PSCommand();
-                command.AddCommand("get-acl");
-                command.AddParameter("path", path);
-                powershell.Commands = command;
-                runspace.Open();
-                powershell.Runspace = runspace;
-                Collection<PSSession> result = powershell.Invoke<PSSession>();
-                powershell.Invoke();
-                if (powershell.Streams.Error.Count > 0)
-                {
-                    throw powershell.Streams.Error[0].Exception;
-                }
-
-                powershell = PowerShell.Create();
-                command = new PSCommand();
+                command.AddCommand("Get-Acl");
+                command.AddParameter("Path", path);
                 command.AddCommand("Set-Variable");
                 command.AddParameter("Name", "acl");
-                command.AddParameter("Value", result[0]);
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
-                powershell.Invoke();
+                Collection<PSObject> result = powershell.Invoke();
                 if (powershell.Streams.Error.Count > 0)
                 {
                     throw powershell.Streams.Error[0].Exception;
                 }
 
-                powershell = PowerShell.Create();
                 command = new PSCommand();
-                command.AddScript("new-object system.security.accesscontrol.filesystemaccessrule(" +
-                    "\"" + samaccountname + "\",\"FullControl\",\"ContainerInherit, ObjectInherit\",\"None\",\"Allow\")");
-                powershell.Commands = command;
-                runspace.Open();
-                powershell.Runspace = runspace;
-                Collection<PSSession> permCol = powershell.Invoke<PSSession>();
-                if (powershell.Streams.Error.Count > 0)
-                {
-                    throw powershell.Streams.Error[0].Exception;
-                }
-
-                powershell = PowerShell.Create();
-                command = new PSCommand();
+                command.AddCommand("New-Object");
+                command.AddParameter("TypeName", "System.Security.AccessControl.FileSystemAccessRule");
+                command.AddParameter("ArgumentList",
+                    new object[]
+                    {
+                        identity,
+                        accesstype,
+                        "ContainerInherit,ObjectInherit",
+                        "None",
+                        "Allow"
+                    });
                 command.AddCommand("Set-Variable");
                 command.AddParameter("Name", "perms");
-                command.AddParameter("Value", permCol[0]);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                result = powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                command = new PSCommand();
+                command.AddScript("$acl.SetAccessRule($perms)");
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
@@ -403,23 +399,9 @@ namespace MSActor.Controllers
                     throw powershell.Streams.Error[0].Exception;
                 }
 
-                powershell = PowerShell.Create();
                 command = new PSCommand();
-                command.AddScript("$acl.setaccessrule($perms)");
+                command.AddScript(String.Format("Set-Acl -AclObject $acl -Path {0}", path));
                 powershell.Commands = command;
-                runspace.Open();
-                powershell.Runspace = runspace;
-                powershell.Invoke();
-                if (powershell.Streams.Error.Count > 0)
-                {
-                    throw powershell.Streams.Error[0].Exception;
-                }
-
-                powershell = PowerShell.Create();
-                command = new PSCommand();
-                command.AddScript("set-acl -path " + path + " -aclobject $acl");
-                powershell.Commands = command;
-                runspace.Open();
                 powershell.Runspace = runspace;
                 powershell.Invoke();
                 if (powershell.Streams.Error.Count > 0)
@@ -435,6 +417,137 @@ namespace MSActor.Controllers
                 MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
                 return errorMessage;
             }
+        }
+
+        public MSActorReturnMessageModel AddDirQuota(string computername, string path, string limit)
+        {
+            MSActorReturnMessageModel errorMessage, successMessage;
+            try
+            {
+                PSSessionOption option = new PSSessionOption();
+                string url = String.Format("http://{0}:5985/wsman", computername);
+                Uri uri = new Uri(url);
+                WSManConnectionInfo conn = new WSManConnectionInfo(uri);
+                Runspace runspace = RunspaceFactory.CreateRunspace(conn);
+                runspace.Open();
+
+                PowerShell powershell = PowerShell.Create();
+                PSCommand command = new PSCommand();
+                string script = String.Format("dirquota quota add /path:\"{0}\" /limit:{1}", path, limit);
+                command.AddScript(script);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                Collection<PSObject> ret = powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    if (powershell.Streams.Error[0].FullyQualifiedErrorId == "NativeCommandError")
+                    {
+                        StringBuilder msgBuilder = new StringBuilder();
+                        foreach (ErrorRecord errorRec in powershell.Streams.Error)
+                        {
+                            // Kludge to fix a weird bug with blank lines in the error output
+                            if (errorRec.CategoryInfo.ToString() == errorRec.Exception.Message)
+                            {
+                                msgBuilder.AppendLine();
+                            }
+                            else
+                            {
+                                msgBuilder.AppendLine(errorRec.Exception.Message);
+                            }
+                        }
+                        throw new Exception(msgBuilder.ToString());
+                    }
+                    else
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                }
+                // The error message is not an error, how annoying!
+                string message = ret.First(x => (x.BaseObject as string).Length > 0).BaseObject as string;
+                // Switch statement in C# only works on constants
+                if (message == String.Format("Quota successfully created for \"{0}\".", path))
+                {
+                    successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                    return successMessage;
+                }
+                else if (message == String.Format("Quota already exists for \"{0}\".", path))
+                {
+                    // Check if the limit is the same
+                    PowerShell powershell1 = PowerShell.Create();
+                    PSCommand command1 = new PSCommand();
+                    string script1 = String.Format("dirquota quota list /path:\"{0}\"", path);
+                    command1.AddScript(script1);
+                    powershell1.Commands = command1;
+                    powershell1.Runspace = runspace;
+                    Collection<PSObject> ret1 = powershell1.Invoke();
+                    if (powershell1.Streams.Error.Count > 0)
+                    {
+                        if (powershell1.Streams.Error[0].FullyQualifiedErrorId == "NativeCommandError")
+                        {
+                            StringBuilder msgBuilder1 = new StringBuilder();
+                            foreach(ErrorRecord errorRec1 in powershell1.Streams.Error)
+                            {
+                                // Kludge to fix a weird bug with blank lines in the error output
+                                if (errorRec1.CategoryInfo.ToString() == errorRec1.Exception.Message)
+                                {
+                                    msgBuilder1.AppendLine();
+                                }
+                                else
+                                {
+                                    msgBuilder1.AppendLine(errorRec1.Exception.Message);
+                                }
+                            }
+                            throw new Exception(msgBuilder1.ToString());
+                        }
+                        else
+                        {
+                            throw powershell1.Streams.Error[0].Exception;
+                        }
+                    }
+                    string existingLimitLine = ret1.First(x => (x.BaseObject as String).StartsWith("Limit:")).BaseObject as string;
+                    if (existingLimitLine == null)
+                    {
+                        // Must have been an error
+                        string message1 = ret1.First(x => (x.BaseObject as string).Length > 0).BaseObject as string;
+                        throw new Exception(message1);
+                    }
+                    else
+                    {
+                        // Parse out the quota and see if it is the same
+                        // Separate the line into (Non-words)[bunch of spaces](Rest of line)"(Hard)"
+                        GroupCollection groups = Regex.Match(existingLimitLine, @"(\S+)\s+(.+)\s\(.+\)$").Groups;
+                        // The (Rest of line) part of the separation is the quota, expressed as e.g. "10.00 GB"
+                        string existingLimit = groups[2].Value;
+                        // Break out numeric and unit parts and compare them
+                        GroupCollection limitGroups = Regex.Match(limit, @"(\d+)\s*(\D+)").Groups;
+                        double limitNumber = double.Parse(limitGroups[1].Value);
+                        string limitUnits = limitGroups[2].Value.ToUpper();
+                        GroupCollection existingLimitGroups = Regex.Match(existingLimit, @"([.\d]+)\s*(\D+)").Groups;
+                        double existingLimitNumber = double.Parse(existingLimitGroups[1].Value);
+                        string existingLimitUnits = existingLimitGroups[2].Value.ToUpper();
+                        if ((limitNumber != existingLimitNumber) || (limitUnits != existingLimitUnits))
+                        {
+                            throw new Exception(String.Format("Path '{0}' has limit '{1}', different than specified.", path, existingLimit));
+                        }
+                        else
+                        {
+                            successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                            return successMessage;
+                        }
+                    }
+                }
+                else
+                {
+                    throw new Exception(message);
+                }
+
+            }
+            catch (Exception e)
+            {
+                errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                return errorMessage;
+            }
+
         }
     }
 }

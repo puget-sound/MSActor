@@ -601,6 +601,20 @@
             <param name="input"></param>
             <returns></returns>
         </member>
+        <member name="M:MSActor.Controllers.MSActorController.AddUserFolderAccess(MSActor.Models.FolderAccessModel)">
+            <summary>
+            Grant specified access to this folder for specified User
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.AddDirQuota(MSActor.Models.DirectoryQuotaModel)">
+            <summary>
+            Add quota on specified folder
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
         <member name="M:MSActor.Controllers.MSActorController.SetHomeDirectory(MSActor.Models.SetHomeDirectoryModel)">
             <summary>
             Creates a new Home Directory for the user

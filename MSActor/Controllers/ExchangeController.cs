@@ -247,8 +247,10 @@ namespace MSActor.Controllers
                 command.AddParameter("Alias", alias);
                 if (addemailaddress != null)
                 {
-                    Hashtable emailaddresses = new Hashtable();
-                    emailaddresses.Add("add", addemailaddress);
+                    Hashtable emailaddresses = new Hashtable
+                    {
+                        { "add", addemailaddress }
+                    };
                     command.AddParameter("EmailAddresses", emailaddresses);
                 }
                 powershell.Commands = command;

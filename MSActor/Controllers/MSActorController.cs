@@ -135,6 +135,32 @@ namespace MSActor.Controllers
         }
 
         /// <summary>
+        /// Grant specified access to this folder for specified User
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("adduserfolderaccess")]
+        [HttpPost]
+        public MSActorReturnMessageModel AddUserFolderAccess([FromBody] FolderAccessModel input)
+        {
+            FileServerController control = new FileServerController();
+            return control.AddUserFolderAccess(input.employeeid, input.samaccountname, input.computername, input.path, input.accesstype);
+        }
+
+        /// <summary>
+        /// Add quota on specified folder
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("adddirquota")]
+        [HttpPost]
+        public MSActorReturnMessageModel AddDirQuota([FromBody] DirectoryQuotaModel input)
+        {
+            FileServerController control = new FileServerController();
+            return control.AddDirQuota(input.computername, input.path, input.limit);
+        }
+
+        /// <summary>
         /// Creates a new Home Directory for the user
         /// </summary>
         /// <param name="input"></param>
