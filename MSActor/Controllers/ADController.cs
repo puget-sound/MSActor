@@ -370,5 +370,177 @@ namespace MSActor.Controllers
             }
         }
 
+        /// <summary>
+        /// Set password
+        /// </summary>
+        /// <param name="employeeid"></param>
+        /// <param name="samaccountname"></param>
+        /// <param name="accountpassword"></param>
+        /// <param name="changepasswordatlogon"></param>
+        /// <returns></returns>
+        public MSActorReturnMessageModel SetPassword(string employeeid, string samaccountname, string accountpassword, string changepasswordatlogon)
+        {
+            UtilityController util = new UtilityController();
+            try
+            {
+                PowerShell ex = PowerShell.Create();
+                //ex.AddCommand("");
+                //ex.AddParameter("", employeeid);
+                //ex.AddParameter("", samaccountname);
+                //ex.AddParameter("", accountpassword);
+                //ex.AddParameter("", changepasswordatlogon);
+                //ex.Invoke();
+                // debugging
+                //dsmod user –empid 9999998 -pwd Saxman123! -mustchpwd no
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
+            }
+            catch (Exception e)
+            {
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                return errorMessage;
+            }
+        }
+
+        /// <summary>
+        /// Delete entry for user
+        /// </summary>
+        /// <param name="employeeid"></param>
+        /// <param name="samaccountname"></param>
+        /// <returns></returns>
+        public MSActorReturnMessageModel RemoveADObject(string employeeid, string samaccountname)
+        {
+            UtilityController util = new UtilityController();
+            try
+            {
+                //get-aduser –filter * -properties employeeid | where-object {$_.employeeid –eq 9999998} | get-adobject | remove-adobject –recursive
+                string dName;
+                PSObject user = util.getADUser(employeeid, samaccountname);
+                Debug.WriteLine(user);
+                dName = user.Properties["DistinguishedName"].Value.ToString();
+                PowerShell ex = PowerShell.Create();
+                ex.AddCommand("Get-ADUser");
+                ex.AddParameter("Identity", dName);
+                // debugging
+                ex.AddCommand("Get-ADObject");
+                ex.AddCommand("Remove-ADObject");
+                ex.AddParameter("recursive"); // debugging
+                ex.Invoke();
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
+            }
+            catch (Exception e)
+            {
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                return errorMessage;
+            }
+        }
+
+        public MSActorReturnMessageModel ChangeUsername(string employeeid, string searchbase, string samaccountname, string userprincipalname)
+        {
+            UtilityController util = new UtilityController();
+            try
+            {
+                //$user = Get-ADUser -Filter "employeeid -eq '9999998'" -SearchBase 'OU=Accounts,DC=spudev,DC=corp' -Properties cn,displayname,givenname,initials
+                //$userDN =$($user.DistinguishedName)
+                //Set - ADUser - identity $userDN - sAMAccountName ‘wclinton’ -UserPrincipalName ‘wclinton @spudev.corp’  -ErrorVariable Err
+
+                string dName;
+                PSObject user = util.getADUser(employeeid, samaccountname);
+                Debug.WriteLine(user);
+                dName = user.Properties["DistinguishedName"].Value.ToString();
+                PowerShell ex = PowerShell.Create();
+                ex.AddCommand("Get-ADUser");
+                ex.AddParameter("Identity", dName);
+                ex.AddParameter("SearchBase", searchbase);
+                // debugging
+                //ex.AddParameter("Properties", );
+                ex.AddCommand("Set-ADUser");
+                ex.AddParameter("Identity", dName);
+                ex.AddParameter("sAMAccountName", samaccountname);
+                ex.AddParameter("UserPrincipalName", userprincipalname);
+                ex.AddParameter("ErrorVariable", "Err");
+                ex.Invoke();
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
+            }
+            catch (Exception e)
+            {
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                return errorMessage;
+            }
+        }
+
+        /// <summary>
+        /// ...
+        /// </summary>
+        /// <param name="employeeid"></param>
+        /// <param name="samaccountname"></param>
+        /// <param name="ipphone"></param>
+        /// <returns></returns>
+        public MSActorReturnMessageModel SetIPPhone(string employeeid, string samaccountname, string ipphone)
+        {
+            UtilityController util = new UtilityController();
+            try
+            {
+                //get-aduser –filter * -properties * | where-object {$_.employeeid –eq 9999998} | Set-aduser -replace @{'ipPhone'=2650}
+                string dName;
+                PSObject user = util.getADUser(employeeid, samaccountname);
+                Debug.WriteLine(user);
+                dName = user.Properties["DistinguishedName"].Value.ToString();
+                PowerShell ex = PowerShell.Create();
+                ex.AddCommand("Get-ADUser");
+                ex.AddParameter("Identity", dName);
+                ex.AddCommand("Set-ADUser");
+                ex.AddParameter("replace", "@{'ipPhone='" + ipphone); // debugging
+                ex.Invoke();
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
+            }
+            catch (Exception e)
+            {
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                return errorMessage;
+            }
+        }
+
+/*
+        public MSActorReturnMessageModel Set_msExchHideFromAddressLists(string employeeid, string samaccountname, string privacyrestriction)
+        {
+            UtilityController util = new UtilityController();
+            try
+            {
+                // translate "true" / "false" string to boolean value
+
+                string dName;
+                PSObject user = util.getADUser(employeeid, samaccountname);
+                Debug.WriteLine(user);
+                dName = user.Properties["DistinguishedName"].Value.ToString();
+                PowerShell ex = PowerShell.Create();
+                ex.AddCommand("Get-ADUser");
+                ex.AddParameter("Identity", dName);
+                // debugging
+                //Get-mailbox $user.samaccountname | set-mailbox –HiddenFromAddressListsEnabled $True
+                ex.AddCommand("Get-mailbox");
+                ex.AddParameter("Identity", dName);
+                ex.AddParameter("sAMAccountName", samaccountname);
+                ex.AddCommand("Set-mailbox");
+                ex.AddParameter("HiddenFromAddressListsEnabled", (privacyrestriction == "true") ? true : false);
+                ex.Invoke();
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
+            }
+            catch (Exception e)
+            {
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                return errorMessage;
+            }
+        }
+*/
     }
 }
