@@ -197,6 +197,8 @@
     <Compile Include="Models\DirectoryModel.cs" />
     <Compile Include="Models\DirectoryQuotaModel.cs" />
     <Compile Include="Models\GroupFolderAccessModel.cs" />
+    <Compile Include="Models\RemoveADGroupMemberModel.cs" />
+    <Compile Include="Models\RemoveADGroupModel.cs" />
     <Compile Include="Models\UserFolderAccessModel.cs" />
     <Compile Include="Models\IdentityModel.cs" />
     <Compile Include="Models\NewMoveRequestModel.cs" />
@@ -209,8 +211,6 @@
     <Compile Include="Models\JsonErrorModel.cs" />
     <Compile Include="Models\MSActorReturnMessageModel.cs" />
     <Compile Include="Models\NewADGroupModel.cs" />
-    <Compile Include="Models\RemoveADGroupMemberModel.cs" />
-    <Compile Include="Models\RemoveADGroupModel.cs" />
     <Compile Include="Models\RemoveADObjectModel.cs" />
     <Compile Include="Models\SetHomeDirectoryModel.cs" />
     <Compile Include="Models\ShareModel.cs" />

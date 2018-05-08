@@ -287,7 +287,7 @@ namespace MSActor.Controllers
         {
             ADController control = new ADController();
             return control.RemoveADObject(input.employeeid, input.samaccountname);
-        }
+        } 
 
         /// <summary>
         /// ...
@@ -300,7 +300,7 @@ namespace MSActor.Controllers
         {
             ADController control = new ADController();
             return control.ChangeUsername(input.employeeid, input.searchbase, input.samaccountname, input.userprincipalname);
-        }
+        } 
 
         /// <summary>
         /// ...
@@ -315,6 +315,7 @@ namespace MSActor.Controllers
             return control.SetIPPhone(input.employeeid, input.samaccountname, input.ipphone);
         }
 
+        /// <summary>
         /// Sets quotas on mailboxes
         /// </summary>
         /// <param name="input"></param>
