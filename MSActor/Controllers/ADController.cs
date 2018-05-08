@@ -1,10 +1,26 @@
-﻿using MSActor.Models;
+﻿/*
+using MSActor.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Management.Automation;
+using System.Web;
+*/
+using MSActor.Models;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Management.Automation;
+using System.Management.Automation.Remoting;
+using System.Management.Automation.Runspaces;
+using System.Net;
+using System.Security;
+using System.Security.Principal;
 using System.Web;
 
 namespace MSActor.Controllers
@@ -414,7 +430,6 @@ namespace MSActor.Controllers
             UtilityController util = new UtilityController();
             try
             {
-                //get-aduser –filter * -properties employeeid | where-object {$_.employeeid –eq 9999998} | get-adobject | remove-adobject –recursive
                 string dName;
                 PSObject user = util.getADUser(employeeid, samaccountname);
                 Debug.WriteLine(user);
@@ -422,10 +437,10 @@ namespace MSActor.Controllers
                 PowerShell ex = PowerShell.Create();
                 ex.AddCommand("Get-ADUser");
                 ex.AddParameter("Identity", dName);
-                // debugging
                 ex.AddCommand("Get-ADObject");
                 ex.AddCommand("Remove-ADObject");
-                ex.AddParameter("recursive"); // debugging
+                ex.AddParameter("confirm", false);
+                ex.AddParameter("recursive");
                 ex.Invoke();
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
@@ -486,7 +501,6 @@ namespace MSActor.Controllers
             UtilityController util = new UtilityController();
             try
             {
-                //get-aduser –filter * -properties * | where-object {$_.employeeid –eq 9999998} | Set-aduser -replace @{'ipPhone'=2650}
                 string dName;
                 PSObject user = util.getADUser(employeeid, samaccountname);
                 Debug.WriteLine(user);
@@ -495,7 +509,13 @@ namespace MSActor.Controllers
                 ex.AddCommand("Get-ADUser");
                 ex.AddParameter("Identity", dName);
                 ex.AddCommand("Set-ADUser");
-                ex.AddParameter("replace", "@{'ipPhone='" + ipphone); // debugging
+                if (ipphone != null) {
+                    Hashtable ipPhoneHash = new Hashtable
+                    {
+                        { "ipPhone", ipphone }
+                    };
+                    ex.AddParameter("replace", ipPhoneHash);
+                }
                 ex.Invoke();
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;

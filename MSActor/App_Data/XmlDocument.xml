@@ -749,13 +749,7 @@
             <param name="input"></param>
             <returns></returns>
         </member>
-        <member name="M:MSActor.Controllers.MSActorController.SetMailboxQuotas(MSActor.Models.SetMailboxQuotasModel)">
-            <summary>
-            Sets quotas on mailboxes
-            </summary>
-            <param name="input"></param>
-            <returns></returns>
-        </member>
+        <!-- Badly formed XML comment ignored for member "M:MSActor.Controllers.MSActorController.SetMailboxQuotas(MSActor.Models.SetMailboxQuotasModel)" -->
         <member name="M:MSActor.Controllers.MSActorController.SetMailboxName(MSActor.Models.SetMailboxNameModel)">
             <summary>
             Changes alias on mailbox
