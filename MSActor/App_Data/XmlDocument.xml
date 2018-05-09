@@ -553,8 +553,6 @@
             <param name="group_member"></param>
             <returns></returns>
         </member>
-<<<<<<< HEAD
-=======
         <member name="M:MSActor.Controllers.ADController.SetPassword(System.String,System.String,System.String,System.String)">
             <summary>
             Set password
@@ -582,7 +580,6 @@
             <param name="ipphone"></param>
             <returns></returns>
         </member>
->>>>>>> 456ab3fedb0a330a6c1c62e3bf149faf07364755
         <member name="T:MSActor.Controllers.FileServerController">
             <summary>
             A class to hold all the File Server related methods
@@ -720,8 +717,6 @@
         <member name="M:MSActor.Controllers.MSActorController.RemoveADGroupMember(MSActor.Models.RemoveADGroupMemberModel)">
             <summary>
             Remove user from an AD group
-<<<<<<< HEAD
-=======
             </summary>
             <param name="input"></param>
             <returns></returns>
@@ -750,7 +745,6 @@
         <member name="M:MSActor.Controllers.MSActorController.SetIPPhone(MSActor.Models.SetIPPhoneModel)">
             <summary>
             ...
->>>>>>> 456ab3fedb0a330a6c1c62e3bf149faf07364755
             </summary>
             <param name="input"></param>
             <returns></returns>
