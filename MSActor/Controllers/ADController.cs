@@ -1,4 +1,5 @@
-﻿using MSActor.Models;
+﻿/*
+using MSActor.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,9 +7,24 @@ using System.Diagnostics;
 using System.Linq;
 using System.Management.Automation;
 using System.Web;
+*/
+using MSActor.Models;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Management.Automation;
+using System.Management.Automation.Remoting;
+using System.Management.Automation.Runspaces;
+using System.Net;
+using System.Security;
+using System.Security.Principal;
+using System.Web;
 
 namespace MSActor.Controllers
-{   
+{
     /// <summary>
     /// This class holds all the methods used to operate on Active Directory in the MSActor. 
     /// There are methods in this actor for changing every value of a user in AD individually. 
@@ -47,7 +63,7 @@ namespace MSActor.Controllers
             string searchIPPhone = "";
             string searchMSExchHideFromAddressList = "";
             string searchChangePasswordAtLogon = "";
-            
+
             string searchEnabled = "";
 
             try
@@ -59,8 +75,8 @@ namespace MSActor.Controllers
                 Collection<PSObject> names = ps.Invoke();
                 foreach (PSObject ob in names)
                 {
-                    
-                        
+
+
                     if (ob.Properties["samaccountname"].Value != null)
                         searchName = ob.Properties["samaccountname"].Value.ToString();
                     if (ob.Properties["City"].Value != null)
@@ -101,18 +117,18 @@ namespace MSActor.Controllers
                         searchPath = ob.Properties["Path"].Value.ToString();
                     if (ob.Properties["PostalCode"].Value != null)
                         searchPostalCode = ob.Properties["PostalCode"].Value.ToString();
-                    
+
                     if (ob.Properties["enabled"].Value != null)
                         searchEnabled = ob.Properties["enabled"].Value.ToString();
                     //The following lines contain a field that has not yet been implemented
                     /*if (ob.Properties["ipphone"].Value != null)
                         searchIPPhone = ob.Properties["ipphone"].Value.ToString();*/
 
-                    
+
                     ADUserModel toReturn = new ADUserModel(searchCity, searchName, searchDepartment,
                         searchDescription, searchDisplayName, searchEmployeeID, searchGivenName, searchOfficePhone,
                         searchInitials, searchOffice, searchPostalCode, searchSamAccountName, searchState,
-                        searchStreetAddress, searchSurname, searchTitle, searchUserPrincipalName, searchPath, searchIPPhone, 
+                        searchStreetAddress, searchSurname, searchTitle, searchUserPrincipalName, searchPath, searchIPPhone,
                         searchMSExchHideFromAddressList, searchChangePasswordAtLogon, searchEnabled, searchType, "");
                     return toReturn;
                 }
@@ -169,7 +185,7 @@ namespace MSActor.Controllers
                 ps.AddParameter("path", user.path);
                 //ps.AddParameter("ipphone", user.ipphone);
                 Collection<PSObject> names = ps.Invoke();
-                
+
             }
             catch (Exception e)
             {
@@ -181,7 +197,7 @@ namespace MSActor.Controllers
             return successMessage;
         }
 
-        
+
         /// <summary>
         /// This method changes the surname of a user in AD. 
         /// </summary>
@@ -206,7 +222,7 @@ namespace MSActor.Controllers
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
                 Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
@@ -414,7 +430,6 @@ namespace MSActor.Controllers
             UtilityController util = new UtilityController();
             try
             {
-                //get-aduser –filter * -properties employeeid | where-object {$_.employeeid –eq 9999998} | get-adobject | remove-adobject –recursive
                 string dName;
                 PSObject user = util.getADUser(employeeid, samaccountname);
                 Debug.WriteLine(user);
@@ -422,10 +437,10 @@ namespace MSActor.Controllers
                 PowerShell ex = PowerShell.Create();
                 ex.AddCommand("Get-ADUser");
                 ex.AddParameter("Identity", dName);
-                // debugging
                 ex.AddCommand("Get-ADObject");
                 ex.AddCommand("Remove-ADObject");
-                ex.AddParameter("recursive"); // debugging
+                ex.AddParameter("confirm", false);
+                ex.AddParameter("recursive");
                 ex.Invoke();
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
@@ -486,7 +501,6 @@ namespace MSActor.Controllers
             UtilityController util = new UtilityController();
             try
             {
-                //get-aduser –filter * -properties * | where-object {$_.employeeid –eq 9999998} | Set-aduser -replace @{'ipPhone'=2650}
                 string dName;
                 PSObject user = util.getADUser(employeeid, samaccountname);
                 Debug.WriteLine(user);
@@ -495,7 +509,14 @@ namespace MSActor.Controllers
                 ex.AddCommand("Get-ADUser");
                 ex.AddParameter("Identity", dName);
                 ex.AddCommand("Set-ADUser");
-                ex.AddParameter("replace", "@{'ipPhone='" + ipphone); // debugging
+                if (ipphone != null)
+                {
+                    Hashtable ipPhoneHash = new Hashtable
+                    {
+                        { "ipPhone", ipphone }
+                    };
+                    ex.AddParameter("replace", ipPhoneHash);
+                }
                 ex.Invoke();
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
@@ -508,39 +529,39 @@ namespace MSActor.Controllers
             }
         }
 
-/*
-        public MSActorReturnMessageModel Set_msExchHideFromAddressLists(string employeeid, string samaccountname, string privacyrestriction)
-        {
-            UtilityController util = new UtilityController();
-            try
-            {
-                // translate "true" / "false" string to boolean value
+        /*
+                public MSActorReturnMessageModel Set_msExchHideFromAddressLists(string employeeid, string samaccountname, string privacyrestriction)
+                {
+                    UtilityController util = new UtilityController();
+                    try
+                    {
+                        // translate "true" / "false" string to boolean value
 
-                string dName;
-                PSObject user = util.getADUser(employeeid, samaccountname);
-                Debug.WriteLine(user);
-                dName = user.Properties["DistinguishedName"].Value.ToString();
-                PowerShell ex = PowerShell.Create();
-                ex.AddCommand("Get-ADUser");
-                ex.AddParameter("Identity", dName);
-                // debugging
-                //Get-mailbox $user.samaccountname | set-mailbox –HiddenFromAddressListsEnabled $True
-                ex.AddCommand("Get-mailbox");
-                ex.AddParameter("Identity", dName);
-                ex.AddParameter("sAMAccountName", samaccountname);
-                ex.AddCommand("Set-mailbox");
-                ex.AddParameter("HiddenFromAddressListsEnabled", (privacyrestriction == "true") ? true : false);
-                ex.Invoke();
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
-            }
-            catch (Exception e)
-            {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
-                return errorMessage;
-            }
-        }
-*/
+                        string dName;
+                        PSObject user = util.getADUser(employeeid, samaccountname);
+                        Debug.WriteLine(user);
+                        dName = user.Properties["DistinguishedName"].Value.ToString();
+                        PowerShell ex = PowerShell.Create();
+                        ex.AddCommand("Get-ADUser");
+                        ex.AddParameter("Identity", dName);
+                        // debugging
+                        //Get-mailbox $user.samaccountname | set-mailbox –HiddenFromAddressListsEnabled $True
+                        ex.AddCommand("Get-mailbox");
+                        ex.AddParameter("Identity", dName);
+                        ex.AddParameter("sAMAccountName", samaccountname);
+                        ex.AddCommand("Set-mailbox");
+                        ex.AddParameter("HiddenFromAddressListsEnabled", (privacyrestriction == "true") ? true : false);
+                        ex.Invoke();
+                        MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                        return successMessage;
+                    }
+                    catch (Exception e)
+                    {
+                        MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                        Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                        return errorMessage;
+                    }
+                }
+        */
     }
 }
