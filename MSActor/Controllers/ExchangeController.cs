@@ -566,7 +566,7 @@ namespace MSActor.Controllers
                 {
                     // Mailbox may already be gone
                     RemoteException ex = powershell.Streams.Error[0].Exception as RemoteException;
-                    if (ex.SerializedRemoteException.TypeNames.Contains("Deserialized.Microsoft.Exchange.Management.AirSync.RecipientNotFoundException"))
+                    if (ex.SerializedRemoteException.TypeNames.Contains("Microsoft.Exchange.Management.AirSync.RecipientNotFoundException"))
                     {
                         return successMessage;
                     }
@@ -577,7 +577,7 @@ namespace MSActor.Controllers
                 }
                 foreach (PSObject device in mobileDevices)
                 {
-                    string deviceIdentity = device.Properties["Identity"].Value as string;
+                    string deviceIdentity = device.Properties["Identity"].Value.ToString();
                     powershell = PowerShell.Create();
                     command = new PSCommand();
                     command.AddCommand("Remove-MobileDevice");
