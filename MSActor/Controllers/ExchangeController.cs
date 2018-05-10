@@ -28,7 +28,7 @@ namespace MSActor.Controllers
 
         }
         public MSActorReturnMessageModel EnableMailboxDriver(string database, string alias, string emailaddresses)
-        {   
+        {
             try
             {
                 PSSessionOption option = new PSSessionOption();
@@ -102,7 +102,7 @@ namespace MSActor.Controllers
 
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
-                
+
             }
             catch (Exception e)
             {
@@ -605,6 +605,77 @@ namespace MSActor.Controllers
                     throw powershell.Streams.Error[0].Exception;
                 }
 
+                return successMessage;
+            }
+            catch (Exception e)
+            {
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                Debug.WriteLine("ERROR: " + e.Message);
+                return errorMessage;
+            }
+        }
+
+        public MSActorReturnMessageModel HideMailboxFromAddressLists(string identity, string hidemailbox)
+        {
+            try
+            {
+                PSSessionOption option = new PSSessionOption();
+                Runspace runspace = RunspaceFactory.CreateRunspace();
+                runspace.Open();
+
+                PowerShell powershell = PowerShell.Create();
+                PSCommand command = new PSCommand();
+                // We get errors when the Exchange remote script tries to talk to us,
+                // unless we redefine Write-Host to be an empty script.
+                command.AddScript("Function Write-Host {}");
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                // Load the Exchange Management Shell startup script
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddScript(RemoteExchangeScript);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                // Ask Exchange Management Shell to sniff the environment for a server and give us a session
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Connect-ExchangeServer");
+                command.AddParameter("Auto");
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                // Now set the HiddenFromAddressListsEnabled flag
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Set-Mailbox");
+                command.AddParameter("Identity", identity);
+                command.AddParameter("HiddenFromAddressListsEnabled", Boolean.Parse(hidemailbox));
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
             }
             catch (Exception e)

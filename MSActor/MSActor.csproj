@@ -197,6 +197,7 @@
     <Compile Include="Models\DirectoryModel.cs" />
     <Compile Include="Models\DirectoryQuotaModel.cs" />
     <Compile Include="Models\GroupFolderAccessModel.cs" />
+    <Compile Include="Models\HideMailboxFromAddressListsModel.cs" />
     <Compile Include="Models\RemoveADGroupMemberModel.cs" />
     <Compile Include="Models\RemoveADGroupModel.cs" />
     <Compile Include="Models\UserFolderAccessModel.cs" />

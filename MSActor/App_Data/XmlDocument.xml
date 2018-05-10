@@ -749,7 +749,13 @@
             <param name="input"></param>
             <returns></returns>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:MSActor.Controllers.MSActorController.SetMailboxQuotas(MSActor.Models.SetMailboxQuotasModel)" -->
+        <member name="M:MSActor.Controllers.MSActorController.SetMailboxQuotas(MSActor.Models.SetMailboxQuotasModel)">
+            <summary>
+            Sets quotas on mailboxes
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
         <member name="M:MSActor.Controllers.MSActorController.SetMailboxName(MSActor.Models.SetMailboxNameModel)">
             <summary>
             Changes alias on mailbox
@@ -774,6 +780,13 @@
         <member name="M:MSActor.Controllers.MSActorController.DisableMailbox(MSActor.Models.IdentityModel)">
             <summary>
             Removes a mailbox
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MSActor.Controllers.MSActorController.HideMailboxFromAddressLists(MSActor.Models.HideMailboxFromAddressListsModel)">
+            <summary>
+            Sets flag on a mailbox to hide it from address lists
             </summary>
             <param name="input"></param>
             <returns></returns>

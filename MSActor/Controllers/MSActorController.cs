@@ -379,5 +379,18 @@ namespace MSActor.Controllers
             ExchangeController control = new ExchangeController();
             return control.DisableMailbox(input.identity);
         }
+
+        /// <summary>
+        /// Sets flag on a mailbox to hide it from address lists
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Route("hidemailboxfromaddresslists")]
+        [HttpPost]
+        public MSActorReturnMessageModel HideMailboxFromAddressLists([FromBody] HideMailboxFromAddressListsModel input)
+        {
+            ExchangeController control = new ExchangeController();
+            return control.HideMailboxFromAddressLists(input.identity, input.hidemailbox);
+        }
     }
 }
