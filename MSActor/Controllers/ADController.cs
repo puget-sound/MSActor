@@ -1,14 +1,4 @@
-﻿/*
-using MSActor.Models;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Management.Automation;
-using System.Web;
-*/
-using MSActor.Models;
+﻿using MSActor.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,6 +11,7 @@ using System.Management.Automation.Runspaces;
 using System.Net;
 using System.Security;
 using System.Security.Principal;
+using System.Text;
 using System.Web;
 
 namespace MSActor.Controllers
@@ -76,7 +67,6 @@ namespace MSActor.Controllers
                 foreach (PSObject ob in names)
                 {
 
-
                     if (ob.Properties["samaccountname"].Value != null)
                         searchName = ob.Properties["samaccountname"].Value.ToString();
                     if (ob.Properties["City"].Value != null)
@@ -123,7 +113,6 @@ namespace MSActor.Controllers
                     //The following lines contain a field that has not yet been implemented
                     /*if (ob.Properties["ipphone"].Value != null)
                         searchIPPhone = ob.Properties["ipphone"].Value.ToString();*/
-
 
                     ADUserModel toReturn = new ADUserModel(searchCity, searchName, searchDepartment,
                         searchDescription, searchDisplayName, searchEmployeeID, searchGivenName, searchOfficePhone,
@@ -183,7 +172,6 @@ namespace MSActor.Controllers
                 ps.AddParameter("type", user.type);
                 ps.AddParameter("userprincipalname", user.userprincipalname);
                 ps.AddParameter("path", user.path);
-                //ps.AddParameter("ipphone", user.ipphone);
                 Collection<PSObject> names = ps.Invoke();
 
             }
@@ -202,6 +190,7 @@ namespace MSActor.Controllers
         /// This method changes the surname of a user in AD. 
         /// </summary>
         /// <param name="employeeid"></param>
+        /// <param name="samaccountname"></param>
         /// <param name="field"></param>
         /// <param name="value"></param>
         /// <returns></returns>
@@ -396,25 +385,74 @@ namespace MSActor.Controllers
         /// <returns></returns>
         public MSActorReturnMessageModel SetPassword(string employeeid, string samaccountname, string accountpassword, string changepasswordatlogon)
         {
+            MSActorReturnMessageModel errorMessage;
             UtilityController util = new UtilityController();
             try
             {
-                PowerShell ex = PowerShell.Create();
+                //PowerShell ex = PowerShell.Create();
                 //ex.AddCommand("");
                 //ex.AddParameter("", employeeid);
                 //ex.AddParameter("", samaccountname);
                 //ex.AddParameter("", accountpassword);
                 //ex.AddParameter("", changepasswordatlogon);
                 //ex.Invoke();
+
                 // debugging
                 //dsmod user –empid 9999998 -pwd Saxman123! -mustchpwd no
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
+
+
+                PSSessionOption option = new PSSessionOption();
+                Runspace runspace = RunspaceFactory.CreateRunspace();
+                runspace.Open();
+
+                PowerShell powershell = PowerShell.Create();
+                PSCommand command = new PSCommand();
+                string script = String.Format("dsmod user -emplid {0} -pwd {1} -mustchpwd {2}", employeeid, accountpassword, changepasswordatlogon);
+                command.AddScript(script);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                Collection<PSObject> ret = powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    if (powershell.Streams.Error[0].FullyQualifiedErrorId == "NativeCommandError")
+                    {
+                        StringBuilder msgBuilder = new StringBuilder();
+                        foreach (ErrorRecord errorRec in powershell.Streams.Error)
+                        {
+                            // Kludge to fix a weird bug with blank lines in the error output
+                            if (errorRec.CategoryInfo.ToString() == errorRec.Exception.Message)
+                            {
+                                msgBuilder.AppendLine();
+                            }
+                            else
+                            {
+                                msgBuilder.AppendLine(errorRec.Exception.Message);
+                            }
+                        }
+                        throw new Exception(msgBuilder.ToString());
+                    }
+                    else
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                }
+                // The return message may or may not be an error, how annoying!
+                // dirquota is not consistent with how many blank lines it returns before a message, so
+                // we search for the first returned line that is not blank.
+                string message = ret.First(x => (x.BaseObject as string).Length > 0).BaseObject as string;
+                if (message == "Quotas modified successfully.")
+                {
+                    MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                    return successMessage;
+                }
+                else
+                {
+                    throw new Exception(message);
+                }
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
                 return errorMessage;
             }
         }
@@ -453,31 +491,66 @@ namespace MSActor.Controllers
             }
         }
 
-        public MSActorReturnMessageModel ChangeUsername(string employeeid, string searchbase, string samaccountname, string userprincipalname)
+        /// <summary>
+        /// ...
+        /// </summary>
+        /// <param name="employeeid"></param>
+        /// <param name="searchbase"></param>
+        /// <param name="old_samaccountname"></param>
+        /// <param name="new_samaccountname"></param>
+        /// <param name="userprincipalname"></param>
+        /// <returns></returns>
+        public MSActorReturnMessageModel ChangeUsername(string employeeid, string searchbase, string old_samaccountname, string new_samaccountname, string userprincipalname)
         {
             UtilityController util = new UtilityController();
             try
             {
-                //$user = Get-ADUser -Filter "employeeid -eq '9999998'" -SearchBase 'OU=Accounts,DC=spudev,DC=corp' -Properties cn,displayname,givenname,initials
-                //$userDN =$($user.DistinguishedName)
-                //Set - ADUser - identity $userDN - sAMAccountName ‘wclinton’ -UserPrincipalName ‘wclinton @spudev.corp’  -ErrorVariable Err
+                // debugging:
+                // $user = Get-ADUser -Filter "employeeid -eq '9999998'" -SearchBase 'OU=Accounts,DC=spudev,DC=corp' -Properties cn,displayname,givenname,initials
+                // $userDN =$($user.DistinguishedName)
+                // Set - ADUser - identity $userDN - sAMAccountName ‘wclinton’ -UserPrincipalName ‘wclinton @spudev.corp’  -ErrorVariable Err
 
                 string dName;
-                PSObject user = util.getADUser(employeeid, samaccountname);
+                PSObject user = util.getADUser(employeeid, old_samaccountname);
                 Debug.WriteLine(user);
                 dName = user.Properties["DistinguishedName"].Value.ToString();
+
+                PowerShell powershell = PowerShell.Create();
+                PSCommand command = new PSCommand();
+                command.AddCommand("Get-ADUser");
+                command.AddParameter("Identity", dName);
+                command.AddParameter("SearchBase", searchbase);
+                command.AddCommand("Set-ADUser");
+                command.AddParameter("sAMAccountName", new_samaccountname);
+                command.AddParameter("UserPrincipalName", userprincipalname);
+                powershell.Commands = command;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+                /* Old, working (with 1 error thrown)
                 PowerShell ex = PowerShell.Create();
                 ex.AddCommand("Get-ADUser");
                 ex.AddParameter("Identity", dName);
                 ex.AddParameter("SearchBase", searchbase);
-                // debugging
-                //ex.AddParameter("Properties", );
+                //ex.AddParameter("Properties", "cn,displayname,givenname,initials");
+                // add set variable command
+                // parameter for name
+                // invoke, check for errors
+                //ex.AddStatement();
                 ex.AddCommand("Set-ADUser");
-                ex.AddParameter("Identity", dName);
-                ex.AddParameter("sAMAccountName", samaccountname);
+                //ex.AddParameter("confirm", true);
+                //ex.AddParameter("Identity", dName);
+                ex.AddParameter("sAMAccountName", new_samaccountname);
                 ex.AddParameter("UserPrincipalName", userprincipalname);
-                ex.AddParameter("ErrorVariable", "Err");
                 ex.Invoke();
+                if (ex.Streams.Error.Count > 0)
+                {
+                    throw ex.Streams.Error[0].Exception;
+                }
+                */
+
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
             }
@@ -528,40 +601,6 @@ namespace MSActor.Controllers
                 return errorMessage;
             }
         }
-
-        /*
-                public MSActorReturnMessageModel Set_msExchHideFromAddressLists(string employeeid, string samaccountname, string privacyrestriction)
-                {
-                    UtilityController util = new UtilityController();
-                    try
-                    {
-                        // translate "true" / "false" string to boolean value
-
-                        string dName;
-                        PSObject user = util.getADUser(employeeid, samaccountname);
-                        Debug.WriteLine(user);
-                        dName = user.Properties["DistinguishedName"].Value.ToString();
-                        PowerShell ex = PowerShell.Create();
-                        ex.AddCommand("Get-ADUser");
-                        ex.AddParameter("Identity", dName);
-                        // debugging
-                        //Get-mailbox $user.samaccountname | set-mailbox –HiddenFromAddressListsEnabled $True
-                        ex.AddCommand("Get-mailbox");
-                        ex.AddParameter("Identity", dName);
-                        ex.AddParameter("sAMAccountName", samaccountname);
-                        ex.AddCommand("Set-mailbox");
-                        ex.AddParameter("HiddenFromAddressListsEnabled", (privacyrestriction == "true") ? true : false);
-                        ex.Invoke();
-                        MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                        return successMessage;
-                    }
-                    catch (Exception e)
-                    {
-                        MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                        Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
-                        return errorMessage;
-                    }
-                }
-        */
+        
     }
 }

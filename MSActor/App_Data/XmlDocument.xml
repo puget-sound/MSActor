@@ -504,6 +504,7 @@
             This method changes the surname of a user in AD. 
             </summary>
             <param name="employeeid"></param>
+            <param name="samaccountname"></param>
             <param name="field"></param>
             <param name="value"></param>
             <returns></returns>
@@ -553,8 +554,6 @@
             <param name="group_member"></param>
             <returns></returns>
         </member>
-<<<<<<< HEAD
-=======
         <member name="M:MSActor.Controllers.ADController.SetPassword(System.String,System.String,System.String,System.String)">
             <summary>
             Set password
@@ -573,6 +572,17 @@
             <param name="samaccountname"></param>
             <returns></returns>
         </member>
+        <member name="M:MSActor.Controllers.ADController.ChangeUsername(System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            ...
+            </summary>
+            <param name="employeeid"></param>
+            <param name="searchbase"></param>
+            <param name="old_samaccountname"></param>
+            <param name="new_samaccountname"></param>
+            <param name="userprincipalname"></param>
+            <returns></returns>
+        </member>
         <member name="M:MSActor.Controllers.ADController.SetIPPhone(System.String,System.String,System.String)">
             <summary>
             ...
@@ -582,7 +592,6 @@
             <param name="ipphone"></param>
             <returns></returns>
         </member>
->>>>>>> 456ab3fedb0a330a6c1c62e3bf149faf07364755
         <member name="T:MSActor.Controllers.FileServerController">
             <summary>
             A class to hold all the File Server related methods
@@ -720,8 +729,6 @@
         <member name="M:MSActor.Controllers.MSActorController.RemoveADGroupMember(MSActor.Models.RemoveADGroupMemberModel)">
             <summary>
             Remove user from an AD group
-<<<<<<< HEAD
-=======
             </summary>
             <param name="input"></param>
             <returns></returns>
@@ -750,12 +757,17 @@
         <member name="M:MSActor.Controllers.MSActorController.SetIPPhone(MSActor.Models.SetIPPhoneModel)">
             <summary>
             ...
->>>>>>> 456ab3fedb0a330a6c1c62e3bf149faf07364755
             </summary>
             <param name="input"></param>
             <returns></returns>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:MSActor.Controllers.MSActorController.SetMailboxQuotas(MSActor.Models.SetMailboxQuotasModel)" -->
+        <member name="M:MSActor.Controllers.MSActorController.SetMailboxQuotas(MSActor.Models.SetMailboxQuotasModel)">
+            <summary>
+            Sets quotas on mailboxes
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
         <member name="M:MSActor.Controllers.MSActorController.SetMailboxName(MSActor.Models.SetMailboxNameModel)">
             <summary>
             Changes alias on mailbox
