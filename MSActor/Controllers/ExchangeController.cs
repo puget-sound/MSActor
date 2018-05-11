@@ -21,41 +21,25 @@ namespace MSActor.Controllers
         public const string SuccessCode = "CMP";
         public const string ErrorCode = "ERR";
         public const string PendingCode = "PND";
+        public const string RemoteExchangeScript = @". 'E:\Program Files\Microsoft\Exchange Server\V15\bin\RemoteExchange.ps1'";
+
         public ExchangeController()
         {
 
         }
         public MSActorReturnMessageModel EnableMailboxDriver(string database, string alias, string emailaddresses)
-        {   
+        {
             try
             {
                 PSSessionOption option = new PSSessionOption();
-                string url = "http://spudevexch13a.spudev.corp/powershell/";
-                System.Uri uri = new Uri(url);
-        
                 Runspace runspace = RunspaceFactory.CreateRunspace();
+                runspace.Open();
 
                 PowerShell powershell = PowerShell.Create();
                 PSCommand command = new PSCommand();
-                command.AddCommand("New-PSSession");
-                command.AddParameter("ConfigurationName", "Microsoft.Exchange");
-                command.AddParameter("ConnectionUri", uri);
-                command.AddParameter("Authentication", "Default");
-                powershell.Commands = command;
-                runspace.Open();
-                powershell.Runspace = runspace;
-                Collection<PSSession> result = powershell.Invoke<PSSession>();
-                if (powershell.Streams.Error.Count > 0)
-                {
-                    throw powershell.Streams.Error[0].Exception;
-                }
-
-
-                powershell = PowerShell.Create();
-                command = new PSCommand();
-                command.AddCommand("Set-Variable");
-                command.AddParameter("Name", "ra");
-                command.AddParameter("Value", result[0]);
+                // We get errors when the Exchange remote script tries to talk to us,
+                // unless we redefine Write-Host to be an empty script.
+                command.AddScript("Function Write-Host {}");
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
@@ -64,9 +48,23 @@ namespace MSActor.Controllers
                     throw powershell.Streams.Error[0].Exception;
                 }
 
+                // Load the Exchange Management Shell startup script
                 powershell = PowerShell.Create();
                 command = new PSCommand();
-                command.AddScript("Import-PSSession -Session $ra");
+                command.AddScript(RemoteExchangeScript);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                // Ask Exchange Management Shell to sniff the environment for a server and give us a session
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Connect-ExchangeServer");
+                command.AddParameter("Auto");
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
@@ -104,7 +102,7 @@ namespace MSActor.Controllers
 
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
-                
+
             }
             catch (Exception e)
             {
@@ -119,31 +117,14 @@ namespace MSActor.Controllers
             try
             {
                 PSSessionOption option = new PSSessionOption();
-                string url = "http://spudevexch13a.spudev.corp/powershell/";
-                System.Uri uri = new Uri(url);
-
                 Runspace runspace = RunspaceFactory.CreateRunspace();
+                runspace.Open();
 
                 PowerShell powershell = PowerShell.Create();
                 PSCommand command = new PSCommand();
-                command.AddCommand("New-PSSession");
-                command.AddParameter("ConfigurationName", "Microsoft.Exchange");
-                command.AddParameter("ConnectionUri", uri);
-                command.AddParameter("Authentication", "Default");
-                powershell.Commands = command;
-                runspace.Open();
-                powershell.Runspace = runspace;
-                Collection<PSSession> result = powershell.Invoke<PSSession>();
-                if (powershell.Streams.Error.Count > 0)
-                {
-                    throw powershell.Streams.Error[0].Exception;
-                }
-
-                powershell = PowerShell.Create();
-                command = new PSCommand();
-                command.AddCommand("Set-Variable");
-                command.AddParameter("Name", "ra");
-                command.AddParameter("Value", result[0]);
+                // We get errors when the Exchange remote script tries to talk to us,
+                // unless we redefine Write-Host to be an empty script.
+                command.AddScript("Function Write-Host {}");
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
@@ -152,9 +133,23 @@ namespace MSActor.Controllers
                     throw powershell.Streams.Error[0].Exception;
                 }
 
+                // Load the Exchange Management Shell startup script
                 powershell = PowerShell.Create();
                 command = new PSCommand();
-                command.AddScript("Import-PSSession -Session $ra");
+                command.AddScript(RemoteExchangeScript);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                // Ask Exchange Management Shell to sniff the environment for a server and give us a session
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Connect-ExchangeServer");
+                command.AddParameter("Auto");
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
@@ -195,32 +190,14 @@ namespace MSActor.Controllers
             try
             {
                 PSSessionOption option = new PSSessionOption();
-                string url = "http://spudevexch13a.spudev.corp/powershell/";
-                System.Uri uri = new Uri(url);
-
                 Runspace runspace = RunspaceFactory.CreateRunspace();
+                runspace.Open();
 
                 PowerShell powershell = PowerShell.Create();
                 PSCommand command = new PSCommand();
-                command.AddCommand("New-PSSession");
-                command.AddParameter("ConfigurationName", "Microsoft.Exchange");
-                command.AddParameter("ConnectionUri", uri);
-                command.AddParameter("Authentication", "Default");
-                powershell.Commands = command;
-                runspace.Open();
-                powershell.Runspace = runspace;
-                Collection<PSSession> result = powershell.Invoke<PSSession>();
-                if (powershell.Streams.Error.Count > 0)
-                {
-                    throw powershell.Streams.Error[0].Exception;
-                }
-
-
-                powershell = PowerShell.Create();
-                command = new PSCommand();
-                command.AddCommand("Set-Variable");
-                command.AddParameter("Name", "ra");
-                command.AddParameter("Value", result[0]);
+                // We get errors when the Exchange remote script tries to talk to us,
+                // unless we redefine Write-Host to be an empty script.
+                command.AddScript("Function Write-Host {}");
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
@@ -229,15 +206,51 @@ namespace MSActor.Controllers
                     throw powershell.Streams.Error[0].Exception;
                 }
 
+                // Load the Exchange Management Shell startup script
                 powershell = PowerShell.Create();
                 command = new PSCommand();
-                command.AddScript("Import-PSSession -Session $ra");
+                command.AddScript(RemoteExchangeScript);
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
                 if (powershell.Streams.Error.Count > 0)
                 {
                     throw powershell.Streams.Error[0].Exception;
+                }
+
+                // Ask Exchange Management Shell to sniff the environment for a server and give us a session
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Connect-ExchangeServer");
+                command.AddParameter("Auto");
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                // Check that new alias does not already exist
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Get-Mailbox");
+                command.AddParameter("Identity", alias);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                Collection<PSObject> existingMailboxes = powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    // It's okay if the object is not found
+                    RemoteException ex = powershell.Streams.Error[0].Exception as RemoteException;
+                    if (!ex.SerializedRemoteException.TypeNames.Contains("Microsoft.Exchange.Configuration.Tasks.ManagementObjectNotFoundException"))
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                }
+                if (existingMailboxes.Count > 0)
+                {
+                    throw new Exception("Mailbox for new alias already exists.");
                 }
 
                 powershell = PowerShell.Create();
@@ -277,32 +290,14 @@ namespace MSActor.Controllers
             try
             {
                 PSSessionOption option = new PSSessionOption();
-                string url = "http://spudevexch13a.spudev.corp/powershell/";
-                System.Uri uri = new Uri(url);
-
                 Runspace runspace = RunspaceFactory.CreateRunspace();
+                runspace.Open();
 
                 PowerShell powershell = PowerShell.Create();
                 PSCommand command = new PSCommand();
-                command.AddCommand("New-PSSession");
-
-                command.AddParameter("ConfigurationName", "Microsoft.Exchange");
-                command.AddParameter("ConnectionUri", uri);
-                command.AddParameter("Authentication", "Default");
-                powershell.Commands = command;
-                runspace.Open();
-                powershell.Runspace = runspace;
-                Collection<PSSession> result = powershell.Invoke<PSSession>();
-                if (powershell.Streams.Error.Count > 0)
-                {
-                    throw powershell.Streams.Error[0].Exception;
-                }
-
-                powershell = PowerShell.Create();
-                command = new PSCommand();
-                command.AddCommand("Set-Variable");
-                command.AddParameter("Name", "ra");
-                command.AddParameter("Value", result[0]);
+                // We get errors when the Exchange remote script tries to talk to us,
+                // unless we redefine Write-Host to be an empty script.
+                command.AddScript("Function Write-Host {}");
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
@@ -311,9 +306,23 @@ namespace MSActor.Controllers
                     throw powershell.Streams.Error[0].Exception;
                 }
 
+                // Load the Exchange Management Shell startup script
                 powershell = PowerShell.Create();
                 command = new PSCommand();
-                command.AddScript("Import-PSSession -Session $ra");
+                command.AddScript(RemoteExchangeScript);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                // Ask Exchange Management Shell to sniff the environment for a server and give us a session
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Connect-ExchangeServer");
+                command.AddParameter("Auto");
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
@@ -333,7 +342,7 @@ namespace MSActor.Controllers
                 {
                     RemoteException ex = powershell.Streams.Error[0].Exception as RemoteException;
                     // ManagementObjectNotFoundException is okay; it means there was not an existing move request
-                    if (!ex.SerializedRemoteException.TypeNames.Contains("Deserialized.Microsoft.Exchange.Configuration.Tasks.ManagementObjectNotFoundException"))
+                    if (!ex.SerializedRemoteException.TypeNames.Contains("Microsoft.Exchange.Configuration.Tasks.ManagementObjectNotFoundException"))
                     {
                         throw powershell.Streams.Error[0].Exception;
                     }
@@ -342,10 +351,11 @@ namespace MSActor.Controllers
                 // If there already is a move request we need to figure out what to do about it
                 if (existingMoveRequests.Count > 0)
                 {
-                    if (existingMoveRequests[0].Properties["Status"].Value as string != "Completed")
+                    string moveRequestStatus = existingMoveRequests[0].Properties["Status"].Value.ToString();
+                    if (moveRequestStatus != "Completed")
                     {
                         // Is the same move request in flight or are we conflicting with another one?
-                        if (existingMoveRequests[0].Properties["TargetDatabase"].Value as string == targetdatabase)
+                        if (existingMoveRequests[0].Properties["TargetDatabase"].Value.ToString() == targetdatabase)
                         {
                             MSActorReturnMessageModel pndMessage = new MSActorReturnMessageModel(PendingCode, "");
                             return pndMessage;
@@ -416,32 +426,14 @@ namespace MSActor.Controllers
             try
             {
                 PSSessionOption option = new PSSessionOption();
-                string url = "http://spudevexch13a.spudev.corp/powershell/";
-                System.Uri uri = new Uri(url);
-
                 Runspace runspace = RunspaceFactory.CreateRunspace();
+                runspace.Open();
 
                 PowerShell powershell = PowerShell.Create();
                 PSCommand command = new PSCommand();
-                command.AddCommand("New-PSSession");
-
-                command.AddParameter("ConfigurationName", "Microsoft.Exchange");
-                command.AddParameter("ConnectionUri", uri);
-                command.AddParameter("Authentication", "Default");
-                powershell.Commands = command;
-                runspace.Open();
-                powershell.Runspace = runspace;
-                Collection<PSSession> result = powershell.Invoke<PSSession>();
-                if (powershell.Streams.Error.Count > 0)
-                {
-                    throw powershell.Streams.Error[0].Exception;
-                }
-
-                powershell = PowerShell.Create();
-                command = new PSCommand();
-                command.AddCommand("Set-Variable");
-                command.AddParameter("Name", "ra");
-                command.AddParameter("Value", result[0]);
+                // We get errors when the Exchange remote script tries to talk to us,
+                // unless we redefine Write-Host to be an empty script.
+                command.AddScript("Function Write-Host {}");
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
@@ -450,9 +442,23 @@ namespace MSActor.Controllers
                     throw powershell.Streams.Error[0].Exception;
                 }
 
+                // Load the Exchange Management Shell startup script
                 powershell = PowerShell.Create();
                 command = new PSCommand();
-                command.AddScript("Import-PSSession -Session $ra");
+                command.AddScript(RemoteExchangeScript);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                // Ask Exchange Management Shell to sniff the environment for a server and give us a session
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Connect-ExchangeServer");
+                command.AddParameter("Auto");
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
@@ -473,7 +479,7 @@ namespace MSActor.Controllers
                     // Here we are throwing an error on purpose if a move request does not exist
                     throw powershell.Streams.Error[0].Exception;
                 }
-                string status = existingMoveRequests[0].Properties["Status"].Value as string;
+                string status = existingMoveRequests[0].Properties["Status"].Value.ToString() as string;
                 switch (status)
                 {
                     case "Completed":
@@ -507,31 +513,14 @@ namespace MSActor.Controllers
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
 
                 PSSessionOption option = new PSSessionOption();
-                string url = "http://spudevexch13a.spudev.corp/powershell/";
-                System.Uri uri = new Uri(url);
-
                 Runspace runspace = RunspaceFactory.CreateRunspace();
+                runspace.Open();
 
                 PowerShell powershell = PowerShell.Create();
                 PSCommand command = new PSCommand();
-                command.AddCommand("New-PSSession");
-                command.AddParameter("ConfigurationName", "Microsoft.Exchange");
-                command.AddParameter("ConnectionUri", uri);
-                command.AddParameter("Authentication", "Default");
-                powershell.Commands = command;
-                runspace.Open();
-                powershell.Runspace = runspace;
-                Collection<PSSession> result = powershell.Invoke<PSSession>();
-                if (powershell.Streams.Error.Count > 0)
-                {
-                    throw powershell.Streams.Error[0].Exception;
-                }
-
-                powershell = PowerShell.Create();
-                command = new PSCommand();
-                command.AddCommand("Set-Variable");
-                command.AddParameter("Name", "ra");
-                command.AddParameter("Value", result[0]);
+                // We get errors when the Exchange remote script tries to talk to us,
+                // unless we redefine Write-Host to be an empty script.
+                command.AddScript("Function Write-Host {}");
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
@@ -540,9 +529,23 @@ namespace MSActor.Controllers
                     throw powershell.Streams.Error[0].Exception;
                 }
 
+                // Load the Exchange Management Shell startup script
                 powershell = PowerShell.Create();
                 command = new PSCommand();
-                command.AddScript("Import-PSSession -Session $ra");
+                command.AddScript(RemoteExchangeScript);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                // Ask Exchange Management Shell to sniff the environment for a server and give us a session
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Connect-ExchangeServer");
+                command.AddParameter("Auto");
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
                 powershell.Invoke();
@@ -563,7 +566,7 @@ namespace MSActor.Controllers
                 {
                     // Mailbox may already be gone
                     RemoteException ex = powershell.Streams.Error[0].Exception as RemoteException;
-                    if (ex.SerializedRemoteException.TypeNames.Contains("Deserialized.Microsoft.Exchange.Management.AirSync.RecipientNotFoundException"))
+                    if (ex.SerializedRemoteException.TypeNames.Contains("Microsoft.Exchange.Management.AirSync.RecipientNotFoundException"))
                     {
                         return successMessage;
                     }
@@ -574,7 +577,7 @@ namespace MSActor.Controllers
                 }
                 foreach (PSObject device in mobileDevices)
                 {
-                    string deviceIdentity = device.Properties["Identity"].Value as string;
+                    string deviceIdentity = device.Properties["Identity"].Value.ToString();
                     powershell = PowerShell.Create();
                     command = new PSCommand();
                     command.AddCommand("Remove-MobileDevice");
@@ -602,6 +605,77 @@ namespace MSActor.Controllers
                     throw powershell.Streams.Error[0].Exception;
                 }
 
+                return successMessage;
+            }
+            catch (Exception e)
+            {
+                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
+                Debug.WriteLine("ERROR: " + e.Message);
+                return errorMessage;
+            }
+        }
+
+        public MSActorReturnMessageModel HideMailboxFromAddressLists(string identity, string hidemailbox)
+        {
+            try
+            {
+                PSSessionOption option = new PSSessionOption();
+                Runspace runspace = RunspaceFactory.CreateRunspace();
+                runspace.Open();
+
+                PowerShell powershell = PowerShell.Create();
+                PSCommand command = new PSCommand();
+                // We get errors when the Exchange remote script tries to talk to us,
+                // unless we redefine Write-Host to be an empty script.
+                command.AddScript("Function Write-Host {}");
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                // Load the Exchange Management Shell startup script
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddScript(RemoteExchangeScript);
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                // Ask Exchange Management Shell to sniff the environment for a server and give us a session
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Connect-ExchangeServer");
+                command.AddParameter("Auto");
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                // Now set the HiddenFromAddressListsEnabled flag
+                powershell = PowerShell.Create();
+                command = new PSCommand();
+                command.AddCommand("Set-Mailbox");
+                command.AddParameter("Identity", identity);
+                command.AddParameter("HiddenFromAddressListsEnabled", Boolean.Parse(hidemailbox));
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;
             }
             catch (Exception e)

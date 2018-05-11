@@ -796,6 +796,13 @@
             <param name="input"></param>
             <returns></returns>
         </member>
+        <member name="M:MSActor.Controllers.MSActorController.HideMailboxFromAddressLists(MSActor.Models.HideMailboxFromAddressListsModel)">
+            <summary>
+            Sets flag on a mailbox to hide it from address lists
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
         <member name="T:MSActor.Models.JsonErrorModel">
             <summary>
             this is an object to handle returning an error as a json object
