@@ -389,66 +389,58 @@ namespace MSActor.Controllers
             UtilityController util = new UtilityController();
             try
             {
-                //PowerShell ex = PowerShell.Create();
-                //ex.AddCommand("");
-                //ex.AddParameter("", employeeid);
-                //ex.AddParameter("", samaccountname);
-                //ex.AddParameter("", accountpassword);
-                //ex.AddParameter("", changepasswordatlogon);
-                //ex.Invoke();
-
-                // debugging
-                //dsmod user –empid 9999998 -pwd Saxman123! -mustchpwd no
-
-
                 PSSessionOption option = new PSSessionOption();
                 Runspace runspace = RunspaceFactory.CreateRunspace();
                 runspace.Open();
 
+                PSObject user = util.getADUser(employeeid, samaccountname);
+
                 PowerShell powershell = PowerShell.Create();
                 PSCommand command = new PSCommand();
-                string script = String.Format("dsmod user -emplid {0} -pwd {1} -mustchpwd {2}", employeeid, accountpassword, changepasswordatlogon);
-                command.AddScript(script);
+                command.AddCommand("ConvertTo-SecureString");
+                command.AddParameter("String", accountpassword);
+                command.AddParameter("AsPlainText");
+                command.AddParameter("Force");
                 powershell.Commands = command;
                 powershell.Runspace = runspace;
-                Collection<PSObject> ret = powershell.Invoke();
+                Collection<PSObject> pwd = powershell.Invoke();
                 if (powershell.Streams.Error.Count > 0)
                 {
-                    if (powershell.Streams.Error[0].FullyQualifiedErrorId == "NativeCommandError")
-                    {
-                        StringBuilder msgBuilder = new StringBuilder();
-                        foreach (ErrorRecord errorRec in powershell.Streams.Error)
-                        {
-                            // Kludge to fix a weird bug with blank lines in the error output
-                            if (errorRec.CategoryInfo.ToString() == errorRec.Exception.Message)
-                            {
-                                msgBuilder.AppendLine();
-                            }
-                            else
-                            {
-                                msgBuilder.AppendLine(errorRec.Exception.Message);
-                            }
-                        }
-                        throw new Exception(msgBuilder.ToString());
-                    }
-                    else
-                    {
-                        throw powershell.Streams.Error[0].Exception;
-                    }
+                    throw powershell.Streams.Error[0].Exception;
                 }
-                // The return message may or may not be an error, how annoying!
-                // dirquota is not consistent with how many blank lines it returns before a message, so
-                // we search for the first returned line that is not blank.
-                string message = ret.First(x => (x.BaseObject as string).Length > 0).BaseObject as string;
-                if (message == "Quotas modified successfully.")
+                if (pwd.Count != 1)
                 {
-                    MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                    return successMessage;
+                    throw new Exception("Unexpected return from creating password secure string.");
                 }
-                else
+
+                command = new PSCommand();
+                command.AddCommand("Set-ADAccountPassword");
+                command.AddParameter("Identity", user);
+                command.AddParameter("NewPassword", pwd[0]);
+                command.AddParameter("Reset");
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
                 {
-                    throw new Exception(message);
+                    throw powershell.Streams.Error[0].Exception;
                 }
+
+                command = new PSCommand();
+                command.AddCommand("Set-AdUser");
+                command.AddParameter("Identity", user);
+                command.AddParameter("ChangePasswordAtLogon", Boolean.Parse(changepasswordatlogon));
+                powershell.Commands = command;
+                powershell.Runspace = runspace;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
+
             }
             catch (Exception e)
             {
@@ -500,7 +492,7 @@ namespace MSActor.Controllers
         /// <param name="new_samaccountname"></param>
         /// <param name="userprincipalname"></param>
         /// <returns></returns>
-        public MSActorReturnMessageModel ChangeUsername(string employeeid, string searchbase, string old_samaccountname, string new_samaccountname, string userprincipalname)
+        public MSActorReturnMessageModel ChangeUsername(string employeeid, string old_samaccountname, string new_samaccountname, string userprincipalname)
         {
             UtilityController util = new UtilityController();
             try
@@ -519,37 +511,43 @@ namespace MSActor.Controllers
                 PSCommand command = new PSCommand();
                 command.AddCommand("Get-ADUser");
                 command.AddParameter("Identity", dName);
-                command.AddParameter("SearchBase", searchbase);
-                command.AddCommand("Set-ADUser");
-                command.AddParameter("sAMAccountName", new_samaccountname);
-                command.AddParameter("UserPrincipalName", userprincipalname);
+                command.AddCommand("Set-Variable");
+                command.AddParameter("Name", "user");
                 powershell.Commands = command;
                 powershell.Invoke();
                 if (powershell.Streams.Error.Count > 0)
                 {
                     throw powershell.Streams.Error[0].Exception;
                 }
-                /* Old, working (with 1 error thrown)
-                PowerShell ex = PowerShell.Create();
-                ex.AddCommand("Get-ADUser");
-                ex.AddParameter("Identity", dName);
-                ex.AddParameter("SearchBase", searchbase);
-                //ex.AddParameter("Properties", "cn,displayname,givenname,initials");
-                // add set variable command
-                // parameter for name
-                // invoke, check for errors
-                //ex.AddStatement();
-                ex.AddCommand("Set-ADUser");
-                //ex.AddParameter("confirm", true);
-                //ex.AddParameter("Identity", dName);
-                ex.AddParameter("sAMAccountName", new_samaccountname);
-                ex.AddParameter("UserPrincipalName", userprincipalname);
-                ex.Invoke();
-                if (ex.Streams.Error.Count > 0)
+
+                command = new PSCommand();
+                command.AddScript("$($user.DistinguishedName)");
+                command.AddCommand("Set-Variable");
+                command.AddParameter("Name", "userDN");
+                powershell.Commands = command;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
                 {
-                    throw ex.Streams.Error[0].Exception;
+                    throw powershell.Streams.Error[0].Exception;
                 }
-                */
+
+                command = new PSCommand();
+                command.AddScript(String.Format("Set-ADUser -Identity $userDN -sAMAccountName {0} -UserPrincipalName {1} -ErrorVariable Err", new_samaccountname, userprincipalname));
+                powershell.Commands = command;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
+
+                command = new PSCommand();
+                command.AddScript(String.Format("Rename-ADObject -Identity $userDN -NewName {0}", new_samaccountname));
+                powershell.Commands = command;
+                powershell.Invoke();
+                if (powershell.Streams.Error.Count > 0)
+                {
+                    throw powershell.Streams.Error[0].Exception;
+                }
 
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                 return successMessage;

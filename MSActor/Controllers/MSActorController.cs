@@ -299,7 +299,7 @@ namespace MSActor.Controllers
         public MSActorReturnMessageModel ChangeUsername([FromBody] ChangeUsernameModel input)
         {
             ADController control = new ADController();
-            return control.ChangeUsername(input.employeeid, input.searchbase, input.old_samaccountname, input.new_samaccountname, input.userprincipalname);
+            return control.ChangeUsername(input.employeeid, input.old_samaccountname, input.new_samaccountname, input.userprincipalname);
         } 
 
         /// <summary>

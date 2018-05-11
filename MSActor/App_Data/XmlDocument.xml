@@ -572,7 +572,7 @@
             <param name="samaccountname"></param>
             <returns></returns>
         </member>
-        <member name="M:MSActor.Controllers.ADController.ChangeUsername(System.String,System.String,System.String,System.String,System.String)">
+        <member name="M:MSActor.Controllers.ADController.ChangeUsername(System.String,System.String,System.String,System.String)">
             <summary>
             ...
             </summary>
