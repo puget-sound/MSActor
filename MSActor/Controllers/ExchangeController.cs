@@ -250,7 +250,7 @@ namespace MSActor.Controllers
                     }
                 }
                 
-                if (existingMailboxes.Any(x => (x.BaseObject is Mailbox) ? (x.BaseObject as Mailbox).Alias == alias : false))
+                if (existingMailboxes.Any(x => (x.BaseObject as Mailbox)?.Alias == alias))
                 {
                     throw new Exception("Mailbox for new alias already exists.");
                 }
