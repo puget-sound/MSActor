@@ -50,6 +50,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Exchange.Data">
+      <HintPath>E:\Program Files\Microsoft\Exchange Server\V15\Bin\Microsoft.Exchange.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Exchange.Data.Directory">
+      <HintPath>E:\Program Files\Microsoft\Exchange Server\V15\Bin\Microsoft.Exchange.Data.Directory.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>

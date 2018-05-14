@@ -1,4 +1,5 @@
 ﻿using MSActor.Models;
+using Microsoft.Exchange.Data.Directory.Management;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -248,7 +249,8 @@ namespace MSActor.Controllers
                         throw powershell.Streams.Error[0].Exception;
                     }
                 }
-                if (existingMailboxes.Count > 0)
+                
+                if (existingMailboxes.Any(x => (x.BaseObject is Mailbox) ? (x.BaseObject as Mailbox).Alias == alias : false))
                 {
                     throw new Exception("Mailbox for new alias already exists.");
                 }
