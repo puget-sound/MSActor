@@ -78,7 +78,7 @@ namespace MSActor.Controllers
         public MSActorReturnMessageModel EnableMailbox([FromBody] EnableMailboxModel input)
         {
             ExchangeController control = new ExchangeController();
-            return control.EnableMailboxDriver(input.database, input.alias, input.emailaddresses);
+            return control.EnableMailbox(input.database, input.alias, input.emailaddresses);
         }
 
         /// <summary>
