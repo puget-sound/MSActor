@@ -20,11 +20,19 @@ namespace MSActor.Controllers
             ps.AddScript(query);
             Collection<PSObject> users = ps.Invoke();
             
-            foreach(PSObject ob in users)
+            //foreach(PSObject ob in users)
+            //{
+            //    return ob;
+            //}
+            //return null;
+            if (users.Count > 0)
             {
-                return ob;
+                return users.First();
             }
-            return null;
+            else
+            {
+                return null;
+            }
         }
 
         public Runspace ConnectRemotePSSession(string serverpath)
