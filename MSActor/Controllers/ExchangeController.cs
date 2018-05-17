@@ -1,4 +1,5 @@
 ﻿using MSActor.Models;
+using Microsoft.Exchange.Data;
 using Microsoft.Exchange.Data.Directory.Management;
 using System;
 using System.Collections;
@@ -30,6 +31,8 @@ namespace MSActor.Controllers
         }
         public MSActorReturnMessageModel EnableMailbox(string database, string alias, string emailaddresses)
         {
+            MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+
             try
             {
                 PSSessionOption option = new PSSessionOption();
@@ -84,7 +87,39 @@ namespace MSActor.Controllers
                         powershell.Invoke();
                         if (powershell.Streams.Error.Count > 0)
                         {
-                            throw powershell.Streams.Error[0].Exception;
+                            // Check if the mailbox exists and is the way we want it
+                            using (PowerShell powershell1 = PowerShell.Create())
+                            {
+                                powershell1.Runspace = runspace;
+                                command = new PSCommand();
+                                command.AddCommand("Get-Mailbox");
+                                command.AddParameter("Identity", alias);
+                                powershell1.Commands = command;
+                                Collection<PSObject> mailboxes = powershell1.Invoke();
+                                if (powershell1.Streams.Error.Count > 0)
+                                {
+                                    // If the mailbox is not found, fall through and throw the other exception.
+                                    // Otherwise something is probably really wrong and throw this exception instead.
+                                    RemoteException ex1 = powershell1.Streams.Error[0].Exception as RemoteException;
+                                    if (!ex1.SerializedRemoteException.TypeNames.Contains("Microsoft.Exchange.Configuration.Tasks.ManagementObjectNotFoundException"))
+                                    {
+                                        throw powershell1.Streams.Error[0].Exception;
+                                    }
+                                }
+                                Mailbox mailbox = mailboxes.FirstOrDefault()?.BaseObject as Mailbox;
+                                if (mailbox != null
+                                    && mailbox.Database.Name == database
+                                    && mailbox.Alias == alias
+                                    && mailbox.EmailAddresses.Contains(ProxyAddress.Parse("SMTP", emailaddresses))
+                                   )
+                                {
+                                    return successMessage;
+                                }
+                                else
+                                {
+                                    throw powershell.Streams.Error[0].Exception;
+                                }
+                            }
                         }
                         powershell.Streams.ClearStreams();
 
@@ -100,7 +135,6 @@ namespace MSActor.Controllers
                         }
                         powershell.Streams.ClearStreams();
 
-                        MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                         return successMessage;
                     }
                 }
