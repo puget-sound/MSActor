@@ -36,7 +36,7 @@ namespace MSActor.Controllers
             return control.GetADUserDriver(emplidWrap.emplid);
         }
 
-        /// <summary>$
+        /// <summary>
         /// This is a method for creating new users in AD. Calls a driver method in the ADController. 
         /// </summary>
         [Route("newaduser")]

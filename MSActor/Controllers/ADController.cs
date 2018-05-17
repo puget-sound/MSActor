@@ -59,69 +59,74 @@ namespace MSActor.Controllers
 
             try
             {
-                PowerShell ps = PowerShell.Create();
-                ps.AddCommand("get-aduser");
-                ps.AddParameter("Filter", "Name -eq " + emplid);
-                ps.AddParameter("Properties", "*");
-                Collection<PSObject> names = ps.Invoke();
-                foreach (PSObject ob in names)
+                using (PowerShell ps = PowerShell.Create())
                 {
+                    ps.AddCommand("get-aduser");
+                    ps.AddParameter("Filter", "Name -eq " + emplid);
+                    ps.AddParameter("Properties", "*");
+                    Collection<PSObject> names = ps.Invoke();
+                    PSObject ob = names.FirstOrDefault();
+                    if (ob != null)
+                    {
+                        if (ob.Properties["samaccountname"].Value != null)
+                            searchName = ob.Properties["samaccountname"].Value.ToString();
+                        if (ob.Properties["City"].Value != null)
+                            searchCity = ob.Properties["City"].Value.ToString();
+                        if (ob.Properties["Country"].Value != null)
+                            searchCountry = ob.Properties["Country"].Value.ToString();
+                        if (ob.Properties["Department"].Value != null)
+                            searchDepartment = ob.Properties["Department"].Value.ToString();
+                        if (ob.Properties["Description"].Value != null)
+                            searchDescription = ob.Properties["Description"].Value.ToString();
+                        if (ob.Properties["DisplayName"].Value != null)
+                            searchDisplayName = ob.Properties["DisplayName"].Value.ToString();
+                        if (ob.Properties["EmployeeID"].Value != null)
+                            searchEmployeeID = ob.Properties["EmployeeID"].Value.ToString();
+                        if (ob.Properties["GivenName"].Value != null)
+                            searchGivenName = ob.Properties["GivenName"].Value.ToString();
+                        if (ob.Properties["OfficePhone"].Value != null)
+                            searchOfficePhone = ob.Properties["OfficePhone"].Value.ToString();
+                        if (ob.Properties["Initials"].Value != null)
+                            searchInitials = ob.Properties["Initials"].Value.ToString();
+                        if (ob.Properties["Office"].Value != null)
+                            searchOffice = ob.Properties["Office"].Value.ToString();
+                        if (ob.Properties["SamAccountName"].Value != null)
+                            searchSamAccountName = ob.Properties["SamAccountName"].Value.ToString();
+                        if (ob.Properties["State"].Value != null)
+                            searchState = ob.Properties["State"].Value.ToString();
+                        if (ob.Properties["StreetAddress"].Value != null)
+                            searchStreetAddress = ob.Properties["StreetAddress"].Value.ToString();
+                        if (ob.Properties["Surname"].Value != null)
+                            searchSurname = ob.Properties["Surname"].Value.ToString();
+                        if (ob.Properties["Title"].Value != null)
+                            searchTitle = ob.Properties["Title"].Value.ToString();
+                        if (ob.Properties["ObjectClass"].Value != null)
+                            searchObjectClass = ob.Properties["ObjectClass"].Value.ToString();
+                        if (ob.Properties["UserPrincipalName"].Value != null)
+                            searchUserPrincipalName = ob.Properties["UserPrincipalName"].Value.ToString();
+                        if (ob.Properties["Path"].Value != null)
+                            searchPath = ob.Properties["Path"].Value.ToString();
+                        if (ob.Properties["PostalCode"].Value != null)
+                            searchPostalCode = ob.Properties["PostalCode"].Value.ToString();
 
-                    if (ob.Properties["samaccountname"].Value != null)
-                        searchName = ob.Properties["samaccountname"].Value.ToString();
-                    if (ob.Properties["City"].Value != null)
-                        searchCity = ob.Properties["City"].Value.ToString();
-                    if (ob.Properties["Country"].Value != null)
-                        searchCountry = ob.Properties["Country"].Value.ToString();
-                    if (ob.Properties["Department"].Value != null)
-                        searchDepartment = ob.Properties["Department"].Value.ToString();
-                    if (ob.Properties["Description"].Value != null)
-                        searchDescription = ob.Properties["Description"].Value.ToString();
-                    if (ob.Properties["DisplayName"].Value != null)
-                        searchDisplayName = ob.Properties["DisplayName"].Value.ToString();
-                    if (ob.Properties["EmployeeID"].Value != null)
-                        searchEmployeeID = ob.Properties["EmployeeID"].Value.ToString();
-                    if (ob.Properties["GivenName"].Value != null)
-                        searchGivenName = ob.Properties["GivenName"].Value.ToString();
-                    if (ob.Properties["OfficePhone"].Value != null)
-                        searchOfficePhone = ob.Properties["OfficePhone"].Value.ToString();
-                    if (ob.Properties["Initials"].Value != null)
-                        searchInitials = ob.Properties["Initials"].Value.ToString();
-                    if (ob.Properties["Office"].Value != null)
-                        searchOffice = ob.Properties["Office"].Value.ToString();
-                    if (ob.Properties["SamAccountName"].Value != null)
-                        searchSamAccountName = ob.Properties["SamAccountName"].Value.ToString();
-                    if (ob.Properties["State"].Value != null)
-                        searchState = ob.Properties["State"].Value.ToString();
-                    if (ob.Properties["StreetAddress"].Value != null)
-                        searchStreetAddress = ob.Properties["StreetAddress"].Value.ToString();
-                    if (ob.Properties["Surname"].Value != null)
-                        searchSurname = ob.Properties["Surname"].Value.ToString();
-                    if (ob.Properties["Title"].Value != null)
-                        searchTitle = ob.Properties["Title"].Value.ToString();
-                    if (ob.Properties["ObjectClass"].Value != null)
-                        searchObjectClass = ob.Properties["ObjectClass"].Value.ToString();
-                    if (ob.Properties["UserPrincipalName"].Value != null)
-                        searchUserPrincipalName = ob.Properties["UserPrincipalName"].Value.ToString();
-                    if (ob.Properties["Path"].Value != null)
-                        searchPath = ob.Properties["Path"].Value.ToString();
-                    if (ob.Properties["PostalCode"].Value != null)
-                        searchPostalCode = ob.Properties["PostalCode"].Value.ToString();
+                        if (ob.Properties["enabled"].Value != null)
+                            searchEnabled = ob.Properties["enabled"].Value.ToString();
+                        //The following lines contain a field that has not yet been implemented
+                        /*if (ob.Properties["ipphone"].Value != null)
+                            searchIPPhone = ob.Properties["ipphone"].Value.ToString();*/
 
-                    if (ob.Properties["enabled"].Value != null)
-                        searchEnabled = ob.Properties["enabled"].Value.ToString();
-                    //The following lines contain a field that has not yet been implemented
-                    /*if (ob.Properties["ipphone"].Value != null)
-                        searchIPPhone = ob.Properties["ipphone"].Value.ToString();*/
-
-                    ADUserModel toReturn = new ADUserModel(searchCity, searchName, searchDepartment,
-                        searchDescription, searchDisplayName, searchEmployeeID, searchGivenName, searchOfficePhone,
-                        searchInitials, searchOffice, searchPostalCode, searchSamAccountName, searchState,
-                        searchStreetAddress, searchSurname, searchTitle, searchUserPrincipalName, searchPath, searchIPPhone,
-                        searchMSExchHideFromAddressList, searchChangePasswordAtLogon, searchEnabled, searchType, "");
-                    return toReturn;
+                        ADUserModel toReturn = new ADUserModel(searchCity, searchName, searchDepartment,
+                            searchDescription, searchDisplayName, searchEmployeeID, searchGivenName, searchOfficePhone,
+                            searchInitials, searchOffice, searchPostalCode, searchSamAccountName, searchState,
+                            searchStreetAddress, searchSurname, searchTitle, searchUserPrincipalName, searchPath, searchIPPhone,
+                            searchMSExchHideFromAddressList, searchChangePasswordAtLogon, searchEnabled, searchType, "");
+                        return toReturn;
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
-                return null;
             }
             catch (Exception e)
             {
@@ -139,41 +144,67 @@ namespace MSActor.Controllers
         {
             try
             {
-                PowerShell ps = PowerShell.Create();    //Password nonsense to follow
-                ps.AddCommand("ConvertTo-SecureString");
-                ps.AddParameter("AsPlainText");
-                ps.AddParameter("String", user.accountPassword);
-                ps.AddParameter("Force");
-                Collection<PSObject> passHashCollection = ps.Invoke();
-                PSObject toPass = passHashCollection.First();   //this is the password wrapped in a psobject
+                using (PowerShell powershell = PowerShell.Create())
+                {
+                    //Password nonsense to follow
+                    PSCommand command = new PSCommand();
+                    command.AddCommand("ConvertTo-SecureString");
+                    command.AddParameter("AsPlainText");
+                    command.AddParameter("String", user.accountPassword);
+                    command.AddParameter("Force");
+                    powershell.Commands = command;
+                    Collection<PSObject> passHashCollection = powershell.Invoke();
+                    if (powershell.Streams.Error.Count > 0)
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                    powershell.Streams.ClearStreams();
+                    PSObject toPass = passHashCollection.First();   //this is the password wrapped in a psobject
 
-                ps = PowerShell.Create();
-                ps.AddCommand("new-aduser");
-                ps.AddParameter("name", user.name); //Name used to be emplid, but has since been changed
-                ps.AddParameter("accountpassword", toPass);
-                ps.AddParameter("changepasswordatlogon", user.changepasswordatlogon);
-                ps.AddParameter("city", user.city);
-                //ps.AddParameter("country", user.country);
-                ps.AddParameter("department", user.department);
-                ps.AddParameter("description", user.description);
-                ps.AddParameter("displayname", user.displayname);
-                ps.AddParameter("employeeid", user.employeeid);
-                ps.AddParameter("enabled", user.enabled);
-                ps.AddParameter("givenname", user.givenname);
-                ps.AddParameter("officephone", user.officephone);
-                ps.AddParameter("initials", user.initials);
-                ps.AddParameter("office", user.office);
-                ps.AddParameter("postalcode", user.postalcode);
-                ps.AddParameter("samaccountname", user.samaccountname);
-                ps.AddParameter("state", user.state);
-                ps.AddParameter("streetaddress", user.streetaddress);
-                ps.AddParameter("surname", user.surname);
-                ps.AddParameter("Title", user.title);
-                ps.AddParameter("type", user.type);
-                ps.AddParameter("userprincipalname", user.userprincipalname);
-                ps.AddParameter("path", user.path);
-                Collection<PSObject> names = ps.Invoke();
+                    command = new PSCommand();
+                    command.AddCommand("new-aduser");
+                    command.AddParameter("name", user.name); //Name used to be emplid, but has since been changed
+                    command.AddParameter("accountpassword", toPass);
+                    command.AddParameter("changepasswordatlogon", user.changepasswordatlogon);
+                    command.AddParameter("city", user.city);
+                    //command.AddParameter("country", user.country);
+                    command.AddParameter("department", user.department);
+                    command.AddParameter("description", user.description);
+                    command.AddParameter("displayname", user.displayname);
+                    command.AddParameter("employeeid", user.employeeid);
+                    command.AddParameter("enabled", user.enabled);
+                    command.AddParameter("givenname", user.givenname);
+                    command.AddParameter("officephone", user.officephone);
+                    command.AddParameter("initials", user.initials);
+                    command.AddParameter("office", user.office);
+                    command.AddParameter("postalcode", user.postalcode);
+                    command.AddParameter("samaccountname", user.samaccountname);
+                    command.AddParameter("state", user.state);
+                    command.AddParameter("streetaddress", user.streetaddress);
+                    command.AddParameter("surname", user.surname);
+                    command.AddParameter("Title", user.title);
+                    command.AddParameter("type", user.type);
+                    command.AddParameter("userprincipalname", user.userprincipalname);
+                    command.AddParameter("path", user.path);
+                    if (user.ipphone != null)
+                    {
+                        Hashtable attrHash = new Hashtable
+                        {
+                            {"ipPhone", user.ipphone }
+                        };
+                        command.AddParameter("OtherAttributes", attrHash);
+                    }
+                    powershell.Commands = command;
+                    powershell.Invoke();
+                    if (powershell.Streams.Error.Count > 0)
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                    powershell.Streams.ClearStreams();
+                }
 
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
             }
             catch (Exception e)
             {
@@ -181,8 +212,6 @@ namespace MSActor.Controllers
                 Debug.WriteLine("Error: " + e.Message);
                 return errorMessage;
             }
-            MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-            return successMessage;
         }
 
 
@@ -201,15 +230,40 @@ namespace MSActor.Controllers
             {
                 string dName;
                 PSObject user = util.getADUser(employeeid, samaccountname);
+                if (user == null)
+                {
+                    throw new Exception("User was not found.");
+                }
                 dName = user.Properties["DistinguishedName"].Value.ToString();
-                PowerShell ex = PowerShell.Create();
-                ex.AddCommand("Set-ADUser");
-                ex.AddParameter("Identity", dName);
-                ex.AddParameter(field, value);
-                ex.AddParameter("ErrorVariable", "Err");
-                ex.Invoke();
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
+                using (PowerShell powershell = PowerShell.Create())
+                {
+                    PSCommand command = new PSCommand();
+                    command.AddCommand("Set-ADUser");
+                    command.AddParameter("Identity", dName);
+                    if (field.ToLower() == "ipphone")
+                    {
+                        Hashtable attrHash = new Hashtable
+                        {
+                            { field, value }
+                        };
+                        command.AddParameter("replace", attrHash);
+                    }
+                    else
+                    {
+                        command.AddParameter(field, value);
+                    }
+                    command.AddParameter("ErrorVariable", "Err");
+                    powershell.Commands = command;
+                    powershell.Invoke();
+                    if (powershell.Streams.Error.Count > 0)
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                    powershell.Streams.ClearStreams();
+
+                    MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                    return successMessage;
+                }
             }
             catch (Exception e)
             {
@@ -234,21 +288,36 @@ namespace MSActor.Controllers
             {
                 string dName;
                 PSObject user = util.getADUser(employeeid, samaccountname);
+                if (user == null)
+                {
+                    throw new Exception("User was not found.");
+                }
                 Debug.WriteLine(user);
                 dName = user.Properties["DistinguishedName"].Value.ToString();
-                PowerShell ex = PowerShell.Create();
-                ex.AddCommand("Set-ADUser");
-                ex.AddParameter("Identity", dName);
-                ex.AddParameter("homedirectory", homedirectory);
-                ex.AddParameter("homedrive", homedrive);
-                ex.Invoke();
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
+
+                using (PowerShell powershell = PowerShell.Create())
+                {
+                    PSCommand command = new PSCommand();
+                    command.AddCommand("Set-ADUser");
+                    command.AddParameter("Identity", dName);
+                    command.AddParameter("homedirectory", homedirectory);
+                    command.AddParameter("homedrive", homedrive);
+                    powershell.Commands = command;
+                    powershell.Invoke();
+                    if (powershell.Streams.Error.Count > 0)
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                    powershell.Streams.ClearStreams();
+
+                    MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                    return successMessage;
+                }
             }
             catch (Exception e)
             {
                 MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                Debug.WriteLine("Error: " + e.Message);
                 return errorMessage;
             }
         }
@@ -268,28 +337,46 @@ namespace MSActor.Controllers
             UtilityController util = new UtilityController();
             try
             {
-                PowerShell ex = PowerShell.Create();
-                ex.AddCommand("New-ADGroup");
-                ex.AddParameter("name", group_name);
-                ex.AddParameter("description", group_description);
-                ex.AddParameter("groupcategory", group_category);
-                ex.AddParameter("displayname", group_info);
-                ex.AddParameter("path", group_ad_path);
-                ex.AddParameter("groupscope", group_scope);
-                if (group_category == "distribution")
+                using (PowerShell powershell = PowerShell.Create())
                 {
-                    ex.AddStatement();
-                    ex.AddCommand("enable-distributiongroup");
-                    ex.AddParameter("identity", group_name);
+                    PSCommand command = new PSCommand();
+                    command.AddCommand("New-ADGroup");
+                    command.AddParameter("name", group_name);
+                    command.AddParameter("description", group_description);
+                    command.AddParameter("groupcategory", group_category);
+                    command.AddParameter("displayname", group_info);
+                    command.AddParameter("path", group_ad_path);
+                    command.AddParameter("groupscope", group_scope);
+                    powershell.Commands = command;
+                    powershell.Invoke();
+                    if (powershell.Streams.Error.Count > 0)
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                    powershell.Streams.ClearStreams();
+
+                    if (group_category == "distribution")
+                    {
+                        command = new PSCommand();
+                        command.AddCommand("enable-distributiongroup");
+                        command.AddParameter("identity", group_name);
+                        powershell.Commands = command;
+                        powershell.Invoke();
+                        if (powershell.Streams.Error.Count > 0)
+                        {
+                            throw powershell.Streams.Error[0].Exception;
+                        }
+                        powershell.Streams.ClearStreams();
+                    }
+
+                    MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                    return successMessage;
                 }
-                ex.Invoke();
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
             }
             catch (Exception e)
             {
                 MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                Debug.WriteLine("Error: " + e.Message);
                 return errorMessage;
             }
         }
@@ -304,18 +391,28 @@ namespace MSActor.Controllers
             UtilityController util = new UtilityController();
             try
             {
-                PowerShell ex = PowerShell.Create();
-                ex.AddCommand("Remove-ADGroup");
-                ex.AddParameter("identity", group_identity);
-                ex.AddParameter("confirm", false);
-                ex.Invoke();
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
+                using (PowerShell powershell = PowerShell.Create())
+                {
+                    PSCommand command = new PSCommand();
+                    command.AddCommand("Remove-ADGroup");
+                    command.AddParameter("identity", group_identity);
+                    command.AddParameter("confirm", false);
+                    powershell.Commands = command;
+                    powershell.Invoke();
+                    if (powershell.Streams.Error.Count > 0)
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                    powershell.Streams.ClearStreams();
+
+                    MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                    return successMessage;
+                }
             }
             catch (Exception e)
             {
                 MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                Debug.WriteLine("Error: " + e.Message);
                 return errorMessage;
             }
         }
@@ -328,21 +425,30 @@ namespace MSActor.Controllers
         /// <returns></returns>
         public MSActorReturnMessageModel AddADGroupMember(string group_identity, string group_member)
         {
-            UtilityController util = new UtilityController();
             try
             {
-                PowerShell ex = PowerShell.Create();
-                ex.AddCommand("Add-ADGroupMember");
-                ex.AddParameter("identity", group_identity);
-                ex.AddParameter("member", group_member);
-                ex.Invoke();
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
+                using (PowerShell powershell = PowerShell.Create())
+                {
+                    PSCommand command = new PSCommand();
+                    command.AddCommand("Add-ADGroupMember");
+                    command.AddParameter("identity", group_identity);
+                    command.AddParameter("member", group_member);
+                    powershell.Commands = command;
+                    powershell.Invoke();
+                    if (powershell.Streams.Error.Count > 0)
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                    powershell.Streams.ClearStreams();
+
+                    MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                    return successMessage;
+                }
             }
             catch (Exception e)
             {
                 MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                Debug.WriteLine("Error: " + e.Message);
                 return errorMessage;
             }
         }
@@ -355,22 +461,31 @@ namespace MSActor.Controllers
         /// <returns></returns>
         public MSActorReturnMessageModel RemoveADGroupMember(string group_identity, string group_member)
         {
-            UtilityController util = new UtilityController();
             try
             {
-                PowerShell ex = PowerShell.Create();
-                ex.AddCommand("Remove-ADGroupMember");
-                ex.AddParameter("identity", group_identity);
-                ex.AddParameter("member", group_member);
-                ex.AddParameter("confirm", false);
-                ex.Invoke();
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
+                using (PowerShell powershell = PowerShell.Create())
+                {
+                    PSCommand command = new PSCommand();
+                    command.AddCommand("Remove-ADGroupMember");
+                    command.AddParameter("identity", group_identity);
+                    command.AddParameter("member", group_member);
+                    command.AddParameter("confirm", false);
+                    powershell.Commands = command;
+                    powershell.Invoke();
+                    if (powershell.Streams.Error.Count > 0)
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                    powershell.Streams.ClearStreams();
+
+                    MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                    return successMessage;
+                }
             }
             catch (Exception e)
             {
                 MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                Debug.WriteLine("Error: " + e.Message);
                 return errorMessage;
             }
         }
@@ -390,57 +505,66 @@ namespace MSActor.Controllers
             try
             {
                 PSSessionOption option = new PSSessionOption();
-                Runspace runspace = RunspaceFactory.CreateRunspace();
-                runspace.Open();
-
-                PSObject user = util.getADUser(employeeid, samaccountname);
-
-                PowerShell powershell = PowerShell.Create();
-                PSCommand command = new PSCommand();
-                command.AddCommand("ConvertTo-SecureString");
-                command.AddParameter("String", accountpassword);
-                command.AddParameter("AsPlainText");
-                command.AddParameter("Force");
-                powershell.Commands = command;
-                powershell.Runspace = runspace;
-                Collection<PSObject> pwd = powershell.Invoke();
-                if (powershell.Streams.Error.Count > 0)
+                using (PowerShell powershell = PowerShell.Create())
                 {
-                    throw powershell.Streams.Error[0].Exception;
-                }
-                if (pwd.Count != 1)
-                {
-                    throw new Exception("Unexpected return from creating password secure string.");
-                }
+                    // Try without the runspace stuff first
+                    //Runspace runspace = RunspaceFactory.CreateRunspace();
+                    //powershell.Runspace = runspace;
+                    //runspace.Open();
 
-                command = new PSCommand();
-                command.AddCommand("Set-ADAccountPassword");
-                command.AddParameter("Identity", user);
-                command.AddParameter("NewPassword", pwd[0]);
-                command.AddParameter("Reset");
-                powershell.Commands = command;
-                powershell.Runspace = runspace;
-                powershell.Invoke();
-                if (powershell.Streams.Error.Count > 0)
-                {
-                    throw powershell.Streams.Error[0].Exception;
+                    PSObject user = util.getADUser(employeeid, samaccountname);
+                    if (user == null)
+                    {
+                        throw new Exception("User was not found.");
+                    }
+
+                    PSCommand command = new PSCommand();
+                    command.AddCommand("ConvertTo-SecureString");
+                    command.AddParameter("String", accountpassword);
+                    command.AddParameter("AsPlainText");
+                    command.AddParameter("Force");
+                    powershell.Commands = command;
+                    Collection<PSObject> pwd = powershell.Invoke();
+                    if (powershell.Streams.Error.Count > 0)
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                    powershell.Streams.ClearStreams();
+
+                    if (pwd.Count != 1)
+                    {
+                        // This may not be reached anymore
+                        throw new Exception("Unexpected return from creating password secure string.");
+                    }
+
+                    command = new PSCommand();
+                    command.AddCommand("Set-ADAccountPassword");
+                    command.AddParameter("Identity", user);
+                    command.AddParameter("NewPassword", pwd[0]);
+                    command.AddParameter("Reset");
+                    powershell.Commands = command;
+                    powershell.Invoke();
+                    if (powershell.Streams.Error.Count > 0)
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                    powershell.Streams.ClearStreams();
+
+                    command = new PSCommand();
+                    command.AddCommand("Set-AdUser");
+                    command.AddParameter("Identity", user);
+                    command.AddParameter("ChangePasswordAtLogon", Boolean.Parse(changepasswordatlogon));
+                    powershell.Commands = command;
+                    powershell.Invoke();
+                    if (powershell.Streams.Error.Count > 0)
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                    powershell.Streams.ClearStreams();
+
+                    MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                    return successMessage;
                 }
-
-                command = new PSCommand();
-                command.AddCommand("Set-AdUser");
-                command.AddParameter("Identity", user);
-                command.AddParameter("ChangePasswordAtLogon", Boolean.Parse(changepasswordatlogon));
-                powershell.Commands = command;
-                powershell.Runspace = runspace;
-                powershell.Invoke();
-                if (powershell.Streams.Error.Count > 0)
-                {
-                    throw powershell.Streams.Error[0].Exception;
-                }
-
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
-
             }
             catch (Exception e)
             {
@@ -462,23 +586,38 @@ namespace MSActor.Controllers
             {
                 string dName;
                 PSObject user = util.getADUser(employeeid, samaccountname);
+                if (user == null)
+                {
+                    throw new Exception("User was not found.");
+                }
                 Debug.WriteLine(user);
                 dName = user.Properties["DistinguishedName"].Value.ToString();
-                PowerShell ex = PowerShell.Create();
-                ex.AddCommand("Get-ADUser");
-                ex.AddParameter("Identity", dName);
-                ex.AddCommand("Get-ADObject");
-                ex.AddCommand("Remove-ADObject");
-                ex.AddParameter("confirm", false);
-                ex.AddParameter("recursive");
-                ex.Invoke();
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
+
+                using (PowerShell powershell = PowerShell.Create())
+                {
+                    PSCommand command = new PSCommand();
+                    command.AddCommand("Get-ADUser");
+                    command.AddParameter("Identity", dName);
+                    command.AddCommand("Get-ADObject");
+                    command.AddCommand("Remove-ADObject");
+                    command.AddParameter("confirm", false);
+                    command.AddParameter("recursive");
+                    powershell.Commands = command;
+                    powershell.Invoke();
+                    if (powershell.Streams.Error.Count > 0)
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                    powershell.Streams.ClearStreams();
+
+                    MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                    return successMessage;
+                }
             }
             catch (Exception e)
             {
                 MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                Debug.WriteLine("Error: " + e.Message);
                 return errorMessage;
             }
         }
@@ -504,58 +643,68 @@ namespace MSActor.Controllers
 
                 string dName;
                 PSObject user = util.getADUser(employeeid, old_samaccountname);
+                if (user == null)
+                {
+                    throw new Exception("User was not found.");
+                }
                 Debug.WriteLine(user);
                 dName = user.Properties["DistinguishedName"].Value.ToString();
 
-                PowerShell powershell = PowerShell.Create();
-                PSCommand command = new PSCommand();
-                command.AddCommand("Get-ADUser");
-                command.AddParameter("Identity", dName);
-                command.AddCommand("Set-Variable");
-                command.AddParameter("Name", "user");
-                powershell.Commands = command;
-                powershell.Invoke();
-                if (powershell.Streams.Error.Count > 0)
+                using (PowerShell powershell = PowerShell.Create())
                 {
-                    throw powershell.Streams.Error[0].Exception;
-                }
+                    PSCommand command = new PSCommand();
+                    command.AddCommand("Get-ADUser");
+                    command.AddParameter("Identity", dName);
+                    command.AddCommand("Set-Variable");
+                    command.AddParameter("Name", "user");
+                    powershell.Commands = command;
+                    powershell.Invoke();
+                    if (powershell.Streams.Error.Count > 0)
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                    powershell.Streams.ClearStreams();
 
-                command = new PSCommand();
-                command.AddScript("$($user.DistinguishedName)");
-                command.AddCommand("Set-Variable");
-                command.AddParameter("Name", "userDN");
-                powershell.Commands = command;
-                powershell.Invoke();
-                if (powershell.Streams.Error.Count > 0)
-                {
-                    throw powershell.Streams.Error[0].Exception;
-                }
+                    command = new PSCommand();
+                    command.AddScript("$($user.DistinguishedName)");
+                    command.AddCommand("Set-Variable");
+                    command.AddParameter("Name", "userDN");
+                    powershell.Commands = command;
+                    powershell.Invoke();
+                    if (powershell.Streams.Error.Count > 0)
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                    powershell.Streams.ClearStreams();
 
-                command = new PSCommand();
-                command.AddScript(String.Format("Set-ADUser -Identity $userDN -sAMAccountName {0} -UserPrincipalName {1} -ErrorVariable Err", new_samaccountname, userprincipalname));
-                powershell.Commands = command;
-                powershell.Invoke();
-                if (powershell.Streams.Error.Count > 0)
-                {
-                    throw powershell.Streams.Error[0].Exception;
-                }
+                    command = new PSCommand();
+                    command.AddScript(String.Format("Set-ADUser -Identity $userDN -sAMAccountName {0} -UserPrincipalName {1} -ErrorVariable Err", new_samaccountname, userprincipalname));
+                    powershell.Commands = command;
+                    powershell.Invoke();
+                    if (powershell.Streams.Error.Count > 0)
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                    powershell.Streams.ClearStreams();
 
-                command = new PSCommand();
-                command.AddScript(String.Format("Rename-ADObject -Identity $userDN -NewName {0}", new_samaccountname));
-                powershell.Commands = command;
-                powershell.Invoke();
-                if (powershell.Streams.Error.Count > 0)
-                {
-                    throw powershell.Streams.Error[0].Exception;
-                }
+                    command = new PSCommand();
+                    command.AddScript(String.Format("Rename-ADObject -Identity $userDN -NewName {0}", new_samaccountname));
+                    powershell.Commands = command;
+                    powershell.Invoke();
+                    if (powershell.Streams.Error.Count > 0)
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                    powershell.Streams.ClearStreams();
 
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
+                    MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                    return successMessage;
+                }
             }
             catch (Exception e)
             {
                 MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                Debug.WriteLine("Error: " + e.Message);
                 return errorMessage;
             }
         }
@@ -574,28 +723,43 @@ namespace MSActor.Controllers
             {
                 string dName;
                 PSObject user = util.getADUser(employeeid, samaccountname);
+                if (user == null)
+                {
+                    throw new Exception("User was not found.");
+                }
                 Debug.WriteLine(user);
                 dName = user.Properties["DistinguishedName"].Value.ToString();
-                PowerShell ex = PowerShell.Create();
-                ex.AddCommand("Get-ADUser");
-                ex.AddParameter("Identity", dName);
-                ex.AddCommand("Set-ADUser");
-                if (ipphone != null)
+
+                using (PowerShell powershell = PowerShell.Create())
                 {
-                    Hashtable ipPhoneHash = new Hashtable
+                    PSCommand command = new PSCommand();
+                    command.AddCommand("Get-ADUser");
+                    command.AddParameter("Identity", dName);
+                    command.AddCommand("Set-ADUser");
+                    if (ipphone != null)
                     {
-                        { "ipPhone", ipphone }
-                    };
-                    ex.AddParameter("replace", ipPhoneHash);
+                        Hashtable ipPhoneHash = new Hashtable
+                        {
+                            { "ipPhone", ipphone }
+                        };
+                        command.AddParameter("replace", ipPhoneHash);
+                    }
+                    powershell.Commands = command;
+                    powershell.Invoke();
+                    if (powershell.Streams.Error.Count > 0)
+                    {
+                        throw powershell.Streams.Error[0].Exception;
+                    }
+                    powershell.Streams.ClearStreams();
+
+                    MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                    return successMessage;
                 }
-                ex.Invoke();
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
             }
             catch (Exception e)
             {
                 MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
+                Debug.WriteLine("Error: " + e.Message);
                 return errorMessage;
             }
         }
