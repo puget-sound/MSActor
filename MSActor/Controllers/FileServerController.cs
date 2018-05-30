@@ -72,9 +72,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("ERROR: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -165,9 +163,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("ERROR: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -205,8 +201,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
         public MSActorReturnMessageModel AddNetShare(string name, string computername, string path)
@@ -317,9 +312,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("ERROR: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -438,24 +431,30 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("ERROR: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
         public MSActorReturnMessageModel AddUserFolderAccess(string employeeid, string samaccountname, string computername, string path, string accesstype)
         {
-            PSObject user = util.getADUser(employeeid, samaccountname);
-            if (user == null)
+            try
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, "User was not found.");
-                return errorMessage;
-            }
-            else
+                PSObject user = util.getADUser(employeeid, samaccountname);
+                if (user == null)
+                {
+                    MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, "User was not found.");
+                    var customEx = new Exception("User was not found", new Exception());
+                    Elmah.ErrorSignal.FromCurrentContext().Raise(customEx);
+                    return errorMessage;
+                }
+                else
+                {
+                    string identity = user.Properties["SamAccountName"].Value as string;
+                    return AddFolderAccess(identity, computername, path, accesstype);
+                }
+            }catch(Exception e)
             {
-                string identity = user.Properties["SamAccountName"].Value as string;
-                return AddFolderAccess(identity, computername, path, accesstype);
+                return util.ReportError(e);
             }
         }
 
@@ -546,8 +545,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -710,8 +708,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
 
         }
@@ -782,8 +779,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MSActor.Models;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -72,6 +73,14 @@ namespace MSActor.Controllers
             powershell.Invoke();
             Debug.WriteLine("About to make it out of the util controller");
             return runspace;
+        }
+
+        public MSActorReturnMessageModel ReportError(Exception e)
+        {
+            Debug.WriteLine("reporting an error");
+            MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel("ERR", e.Message);
+            Elmah.ErrorSignal.FromCurrentContext().Raise(e);
+            return errorMessage;
         }
     }
 }

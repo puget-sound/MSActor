@@ -597,7 +597,7 @@
             A class to hold all the File Server related methods
             </summary>
         </member>
-        <member name="M:MSActor.Controllers.MSActorController.#ctor">
+        <member name="F:MSActor.Controllers.MSActorController.util">
             <summary>
             Constructor for the MSActor Controller. Runs all MSActor Functions. 
             </summary>

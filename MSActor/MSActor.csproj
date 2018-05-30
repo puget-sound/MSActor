@@ -49,6 +49,12 @@
     <FilesToIncludeForPublish>AllFilesInTheProject</FilesToIncludeForPublish>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Elmah, Version=1.2.14706.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\elmah.corelibrary.1.2.2\lib\Elmah.dll</HintPath>
+    </Reference>
+    <Reference Include="Elmah.Bootstrapper, Version=1.0.21423.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\elmah.bootstrapper.1.0.1\lib\net45\Elmah.Bootstrapper.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Exchange.Data">
       <HintPath>E:\Program Files\Microsoft\Exchange Server\V15\Bin\Microsoft.Exchange.Data.dll</HintPath>

@@ -26,6 +26,11 @@ namespace MSActor.Controllers
     /// </summary>
     public class ADController
     {
+        UtilityController util;
+        public ADController()
+        {
+            util = new UtilityController();
+        }
         public const string SuccessCode = "CMP";
         public const string ErrorCode = "ERR";
         public ADUserModel GetADUserDriver(string emplid)
@@ -208,9 +213,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Error: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -267,9 +270,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Ruh Roh Raggy: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -316,9 +317,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Error: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -375,9 +374,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Error: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -411,9 +408,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Error: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -447,9 +442,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Error: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -484,9 +477,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Error: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -568,8 +559,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -616,9 +606,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Error: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -703,9 +691,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Error: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -758,9 +744,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("Error: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
         

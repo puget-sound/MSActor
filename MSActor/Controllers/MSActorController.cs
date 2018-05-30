@@ -15,12 +15,13 @@ using Newtonsoft.Json;
 namespace MSActor.Controllers
 {
     public class MSActorController : ApiController
-    { 
+    {
         /// <summary>
         /// Constructor for the MSActor Controller. Runs all MSActor Functions. 
         /// </summary>
+        UtilityController util;
         public MSActorController() {
-            Debug.WriteLine("We are Legion for we are many");
+            util = new UtilityController(); 
         }
 
         /// <summary>
@@ -43,8 +44,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel NewADUser([FromBody] ADUserModel newUser)
         {
-            ADController control = new ADController();
-            return control.NewADUserDriver(newUser);
+            try { 
+
+                ADController control = new ADController();
+                return control.NewADUserDriver(newUser);
+            }catch(Exception e)
+            {
+               return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -63,9 +70,13 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel ChangeUserValue([FromBody] ChangeUserValueModel input)
         {
-            ADController control = new ADController();
-            Debug.WriteLine("General Kenobi: " + input.employeeid);
-            return control.ChangeUserValueDriver(input.employeeid, input.samaccountname, input.field, input.value);
+            try { 
+                ADController control = new ADController();
+                return control.ChangeUserValueDriver(input.employeeid, input.samaccountname, input.field, input.value);
+            }catch(Exception e)
+            {
+               return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -77,8 +88,13 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel EnableMailbox([FromBody] EnableMailboxModel input)
         {
-            ExchangeController control = new ExchangeController();
-            return control.EnableMailbox(input.database, input.alias, input.emailaddresses);
+            try { 
+                ExchangeController control = new ExchangeController();
+                return control.EnableMailbox(input.database, input.alias, input.emailaddresses);
+            }catch(Exception e)
+            {
+               return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -90,8 +106,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel NewDirectory([FromBody] DirectoryModel input)
         {
-            FileServerController control = new FileServerController();
-            return control.NewDirectory(input.computername, input.path);
+            try
+            {
+                FileServerController control = new FileServerController();
+                return control.NewDirectory(input.computername, input.path);
+            }catch(Exception e)
+            {
+               return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -103,8 +125,13 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel RemoveDirectory([FromBody] DirectoryModel input)
         {
-            FileServerController control = new FileServerController();
-            return control.RemoveDirectory(input.computername, input.path);
+            try { 
+                FileServerController control = new FileServerController();
+                return control.RemoveDirectory(input.computername, input.path);
+            }catch(Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -116,8 +143,13 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel RenameDirectory([FromBody] RenameDirectoryModel input)
         {
-            FileServerController control = new FileServerController();
-            return control.RenameDirectory(input.computername, input.path, input.newname);
+            try { 
+                FileServerController control = new FileServerController();
+                return control.RenameDirectory(input.computername, input.path, input.newname);
+            }catch(Exception e)
+            {
+               return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -129,8 +161,13 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel AddNetShare([FromBody] ShareModel input)
         {
-            FileServerController control = new FileServerController();
-            return control.AddNetShare(input.name, input.computername, input.path);
+            try { 
+                FileServerController control = new FileServerController();
+                return control.AddNetShare(input.name, input.computername, input.path);
+            }catch(Exception e)
+            {
+               return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -142,8 +179,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel RemoveNetShare([FromBody] ShareModel input)
         {
-            FileServerController control = new FileServerController();
-            return control.RemoveNetShare(input.name, input.computername, input.path);
+            try { 
+                FileServerController control = new FileServerController();
+                return control.RemoveNetShare(input.name, input.computername, input.path);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -155,8 +198,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel AddUserFolderAccess([FromBody] UserFolderAccessModel input)
         {
-            FileServerController control = new FileServerController();
-            return control.AddUserFolderAccess(input.employeeid, input.samaccountname, input.computername, input.path, input.accesstype);
+            try { 
+                FileServerController control = new FileServerController();
+                return control.AddUserFolderAccess(input.employeeid, input.samaccountname, input.computername, input.path, input.accesstype);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -168,8 +217,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel AddGroupFolderAccess([FromBody] GroupFolderAccessModel input)
         {
-            FileServerController control = new FileServerController();
-            return control.AddGroupFolderAccess(input.groupname, input.computername, input.path, input.accesstype);
+            try { 
+                FileServerController control = new FileServerController();
+                return control.AddGroupFolderAccess(input.groupname, input.computername, input.path, input.accesstype);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -181,8 +236,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel AddDirQuota([FromBody] DirectoryQuotaModel input)
         {
-            FileServerController control = new FileServerController();
-            return control.AddDirQuota(input.computername, input.path, input.limit);
+            try { 
+                FileServerController control = new FileServerController();
+                return control.AddDirQuota(input.computername, input.path, input.limit);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -194,8 +255,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel ModifyDirQuota([FromBody] DirectoryQuotaModel input)
         {
-            FileServerController control = new FileServerController();
-            return control.ModifyDirQuota(input.computername, input.path, input.limit);
+            try { 
+                FileServerController control = new FileServerController();
+                return control.ModifyDirQuota(input.computername, input.path, input.limit);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -207,8 +274,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel SetHomeDirectory([FromBody] SetHomeDirectoryModel input)
         {
-            ADController control = new ADController();
-            return control.SetHomeDirectory(input.employeeid, input.samaccountname, input.homedirectory, input.homedrive);
+            try { 
+                ADController control = new ADController();
+                return control.SetHomeDirectory(input.employeeid, input.samaccountname, input.homedirectory, input.homedrive);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -220,8 +293,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel NewADGroup([FromBody] NewADGroupModel input)
         {
-            ADController control = new ADController();
-            return control.NewADGroup(input.name, input.description, input.info, input.path, input.groupcategory, input.groupscope);
+            try { 
+                ADController control = new ADController();
+                return control.NewADGroup(input.name, input.description, input.info, input.path, input.groupcategory, input.groupscope);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -233,8 +312,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel RemoveADGroup([FromBody] RemoveADGroupModel input)
         {
-            ADController control = new ADController();
-            return control.RemoveADGroup(input.identity);
+            try { 
+                ADController control = new ADController();
+                return control.RemoveADGroup(input.identity);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -246,8 +331,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel AddADGroupMember([FromBody] AddADGroupMemberModel input)
         {
-            ADController control = new ADController();
-            return control.AddADGroupMember(input.identity, input.member);
+            try { 
+                ADController control = new ADController();
+                return control.AddADGroupMember(input.identity, input.member);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -259,8 +350,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel RemoveADGroupMember([FromBody] RemoveADGroupMemberModel input)
         {
-            ADController control = new ADController();
-            return control.RemoveADGroupMember(input.identity, input.member);
+            try { 
+                ADController control = new ADController();
+                return control.RemoveADGroupMember(input.identity, input.member);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -272,8 +369,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel SetPassword([FromBody] SetPasswordModel input)
         {
-            ADController control = new ADController();
-            return control.SetPassword(input.employeeid, input.samaccountname, input.accountpassword, input.changepasswordatlogon);
+            try { 
+                ADController control = new ADController();
+                return control.SetPassword(input.employeeid, input.samaccountname, input.accountpassword, input.changepasswordatlogon);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -285,8 +388,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel RemoveADObject([FromBody] RemoveADObjectModel input)
         {
-            ADController control = new ADController();
-            return control.RemoveADObject(input.employeeid, input.samaccountname);
+            try { 
+                ADController control = new ADController();
+                return control.RemoveADObject(input.employeeid, input.samaccountname);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         } 
 
         /// <summary>
@@ -298,8 +407,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel ChangeUsername([FromBody] ChangeUsernameModel input)
         {
-            ADController control = new ADController();
-            return control.ChangeUsername(input.employeeid, input.old_samaccountname, input.new_samaccountname, input.userprincipalname);
+            try { 
+                ADController control = new ADController();
+                return control.ChangeUsername(input.employeeid, input.old_samaccountname, input.new_samaccountname, input.userprincipalname);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         } 
 
         /// <summary>
@@ -311,8 +426,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel SetIPPhone([FromBody] SetIPPhoneModel input)
         {
-            ADController control = new ADController();
-            return control.SetIPPhone(input.employeeid, input.samaccountname, input.ipphone);
+            try { 
+                ADController control = new ADController();
+                return control.SetIPPhone(input.employeeid, input.samaccountname, input.ipphone);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -324,8 +445,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel SetMailboxQuotas([FromBody] SetMailboxQuotasModel input)
         {
-            ExchangeController control = new ExchangeController();
-            return control.SetMailboxQuotas(input.identity, input.prohibitsendreceivequota, input.prohibitsendquota, input.issuewarningquota);
+            try { 
+                ExchangeController control = new ExchangeController();
+                return control.SetMailboxQuotas(input.identity, input.prohibitsendreceivequota, input.prohibitsendquota, input.issuewarningquota);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -337,8 +464,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel SetMailboxName([FromBody] SetMailboxNameModel input)
         {
-            ExchangeController control = new ExchangeController();
-            return control.SetMailboxName(input.identity, input.alias, input.addemailaddress);
+            try { 
+                ExchangeController control = new ExchangeController();
+                return control.SetMailboxName(input.identity, input.alias, input.addemailaddress);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -350,8 +483,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel NewMoveRequest([FromBody] NewMoveRequestModel input)
         {
-            ExchangeController control = new ExchangeController();
-            return control.NewMoveRequest(input.identity, input.targetdatabase);
+            try { 
+                ExchangeController control = new ExchangeController();
+                return control.NewMoveRequest(input.identity, input.targetdatabase);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -363,8 +502,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel GetMoveRequest([FromBody] IdentityModel input)
         {
-            ExchangeController control = new ExchangeController();
-            return control.GetMoveRequest(input.identity);
+            try { 
+                ExchangeController control = new ExchangeController();
+                return control.GetMoveRequest(input.identity);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -376,8 +521,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel DisableMailbox([FromBody] IdentityModel input)
         {
-            ExchangeController control = new ExchangeController();
-            return control.DisableMailbox(input.identity);
+            try { 
+                ExchangeController control = new ExchangeController();
+                return control.DisableMailbox(input.identity);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
 
         /// <summary>
@@ -389,8 +540,14 @@ namespace MSActor.Controllers
         [HttpPost]
         public MSActorReturnMessageModel HideMailboxFromAddressLists([FromBody] HideMailboxFromAddressListsModel input)
         {
-            ExchangeController control = new ExchangeController();
-            return control.HideMailboxFromAddressLists(input.identity, input.hidemailbox);
+            try { 
+                ExchangeController control = new ExchangeController();
+                return control.HideMailboxFromAddressLists(input.identity, input.hidemailbox);
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
         }
     }
 }

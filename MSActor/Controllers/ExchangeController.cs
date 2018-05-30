@@ -24,10 +24,10 @@ namespace MSActor.Controllers
         public const string ErrorCode = "ERR";
         public const string PendingCode = "PND";
         public const string RemoteExchangeScript = @". 'E:\Program Files\Microsoft\Exchange Server\V15\bin\RemoteExchange.ps1'";
-
+        UtilityController util;
         public ExchangeController()
         {
-
+            util = new UtilityController();
         }
         public MSActorReturnMessageModel EnableMailbox(string database, string alias, string emailaddresses)
         {
@@ -141,9 +141,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("ERROR: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -216,9 +214,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("ERROR: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -318,9 +314,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("ERROR: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -451,9 +445,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("ERROR: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -539,9 +531,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("ERROR: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -651,9 +641,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("ERROR: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
 
@@ -724,9 +712,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                MSActorReturnMessageModel errorMessage = new MSActorReturnMessageModel(ErrorCode, e.Message);
-                Debug.WriteLine("ERROR: " + e.Message);
-                return errorMessage;
+                return util.ReportError(e);
             }
         }
     }
