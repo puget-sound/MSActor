@@ -463,54 +463,9 @@ namespace MSActor.Controllers
                         powershell.Runspace = runspace;
                         runspace.Open();
 
+                        ConnectToExchange(powershell, runspace);
+
                         PSCommand command = new PSCommand();
-                        // We get errors when the Exchange remote script tries to talk to us,
-                        // unless we redefine Write-Host to be an empty script.
-                        command.AddScript("Function Write-Host {}");
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
-
-                        // Load the Exchange Management Shell startup script
-                        command = new PSCommand();
-                        command.AddScript(RemoteExchangeScript);
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
-
-                        // Ask Exchange Management Shell to sniff the environment for a server and give us a session
-                        command = new PSCommand();
-                        command.AddCommand("Connect-ExchangeServer");
-                        command.AddParameter("Auto");
-                        powershell.Commands = command;
-                        powershell.Invoke();
-
-                        bool connected = false;
-                        //if (powershell.Streams.Verbose.Contains(x => x.Message.StartsWith("Connected to")))
-                        foreach (VerboseRecord vr in powershell.Streams.Verbose)
-                        {
-                            if (vr.Message.StartsWith("Connected to"))
-                            {
-                                connected = true;
-                                break;
-                            }
-                        }
-
-                        if (!connected && powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
-
-                        command = new PSCommand();
                         command.AddCommand("Get-MoveRequest");
                         command.AddParameter("Identity", identity);
                         powershell.Commands = command;
@@ -726,6 +681,57 @@ namespace MSActor.Controllers
             {
                 return util.ReportError(e);
             }
+        }
+
+        private void ConnectToExchange(PowerShell powershell, Runspace runspace)
+        {
+            PSCommand command = new PSCommand();
+            // We get errors when the Exchange remote script tries to talk to us,
+            // unless we redefine Write-Host to be an empty script.
+            command.AddScript("Function Write-Host {}");
+            powershell.Commands = command;
+            powershell.Invoke();
+            if (powershell.Streams.Error.Count > 0)
+            {
+                throw powershell.Streams.Error[0].Exception;
+            }
+            powershell.Streams.ClearStreams();
+
+            // Load the Exchange Management Shell startup script
+            command = new PSCommand();
+            command.AddScript(RemoteExchangeScript);
+            powershell.Commands = command;
+            powershell.Invoke();
+            if (powershell.Streams.Error.Count > 0)
+            {
+                throw powershell.Streams.Error[0].Exception;
+            }
+            powershell.Streams.ClearStreams();
+
+            // Ask Exchange Management Shell to sniff the environment for a server and give us a session
+            command = new PSCommand();
+            command.AddCommand("Connect-ExchangeServer");
+            command.AddParameter("Auto");
+            powershell.Commands = command;
+            powershell.Invoke();
+
+            // Dealing with the possibility I might error connecting to one server,
+            // but then succeed connecting to the next
+            bool connected = false;
+            foreach (VerboseRecord vr in powershell.Streams.Verbose)
+            {
+                if (vr.Message.StartsWith("Connected to"))
+                {
+                    connected = true;
+                    break;
+                }
+            }
+
+            if (!connected && powershell.Streams.Error.Count > 0)
+            {
+                throw powershell.Streams.Error[0].Exception;
+            }
+            powershell.Streams.ClearStreams();
         }
     }
 
