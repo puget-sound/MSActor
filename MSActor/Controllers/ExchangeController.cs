@@ -43,42 +43,9 @@ namespace MSActor.Controllers
                         runspace.Open();
                         powershell.Runspace = runspace;
 
+                        ConnectToExchange(powershell, runspace);
+
                         PSCommand command = new PSCommand();
-                        // We get errors when the Exchange remote script tries to talk to us,
-                        // unless we redefine Write-Host to be an empty script.
-                        command.AddScript("Function Write-Host {}");
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
-
-                        // Load the Exchange Management Shell startup script
-                        command = new PSCommand();
-                        command.AddScript(RemoteExchangeScript);
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
-
-                        // Ask Exchange Management Shell to sniff the environment for a server and give us a session
-                        command = new PSCommand();
-                        command.AddCommand("Connect-ExchangeServer");
-                        command.AddParameter("Auto");
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
-
-                        command = new PSCommand();
                         command.AddCommand("Enable-Mailbox");
                         command.AddParameter("identity", alias);
                         command.AddParameter("database", database);
@@ -157,42 +124,9 @@ namespace MSActor.Controllers
                         powershell.Runspace = runspace;
                         runspace.Open();
 
+                        ConnectToExchange(powershell, runspace);
+
                         PSCommand command = new PSCommand();
-                        // We get errors when the Exchange remote script tries to talk to us,
-                        // unless we redefine Write-Host to be an empty script.
-                        command.AddScript("Function Write-Host {}");
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
-
-                        // Load the Exchange Management Shell startup script
-                        command = new PSCommand();
-                        command.AddScript(RemoteExchangeScript);
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
-
-                        // Ask Exchange Management Shell to sniff the environment for a server and give us a session
-                        command = new PSCommand();
-                        command.AddCommand("Connect-ExchangeServer");
-                        command.AddParameter("Auto");
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
-
-                        command = new PSCommand();
                         command.AddCommand("Set-Mailbox");
                         command.AddParameter("Identity", identity);
                         command.AddParameter("IssueWarningQuota", issuewarningquota);
@@ -230,43 +164,10 @@ namespace MSActor.Controllers
                         powershell.Runspace = runspace;
                         runspace.Open();
 
-                        PSCommand command = new PSCommand();
-                        // We get errors when the Exchange remote script tries to talk to us,
-                        // unless we redefine Write-Host to be an empty script.
-                        command.AddScript("Function Write-Host {}");
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
-
-                        // Load the Exchange Management Shell startup script
-                        command = new PSCommand();
-                        command.AddScript(RemoteExchangeScript);
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
-
-                        // Ask Exchange Management Shell to sniff the environment for a server and give us a session
-                        command = new PSCommand();
-                        command.AddCommand("Connect-ExchangeServer");
-                        command.AddParameter("Auto");
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
+                        ConnectToExchange(powershell, runspace);
 
                         // Check that new alias does not already exist
-                        command = new PSCommand();
+                        PSCommand command = new PSCommand();
                         command.AddCommand("Get-Mailbox");
                         command.AddParameter("Identity", alias);
                         powershell.Commands = command;
@@ -330,42 +231,9 @@ namespace MSActor.Controllers
                         powershell.Runspace = runspace;
                         runspace.Open();
 
+                        ConnectToExchange(powershell, runspace);
+
                         PSCommand command = new PSCommand();
-                        // We get errors when the Exchange remote script tries to talk to us,
-                        // unless we redefine Write-Host to be an empty script.
-                        command.AddScript("Function Write-Host {}");
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
-
-                        // Load the Exchange Management Shell startup script
-                        command = new PSCommand();
-                        command.AddScript(RemoteExchangeScript);
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
-
-                        // Ask Exchange Management Shell to sniff the environment for a server and give us a session
-                        command = new PSCommand();
-                        command.AddCommand("Connect-ExchangeServer");
-                        command.AddParameter("Auto");
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
-
-                        command = new PSCommand();
                         command.AddCommand("Get-MoveRequest");
                         command.AddParameter("Identity", identity);
                         powershell.Commands = command;
@@ -518,43 +386,10 @@ namespace MSActor.Controllers
                         powershell.Runspace = runspace;
                         runspace.Open();
 
-                        PSCommand command = new PSCommand();
-                        // We get errors when the Exchange remote script tries to talk to us,
-                        // unless we redefine Write-Host to be an empty script.
-                        command.AddScript("Function Write-Host {}");
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
-
-                        // Load the Exchange Management Shell startup script
-                        command = new PSCommand();
-                        command.AddScript(RemoteExchangeScript);
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
-
-                        // Ask Exchange Management Shell to sniff the environment for a server and give us a session
-                        command = new PSCommand();
-                        command.AddCommand("Connect-ExchangeServer");
-                        command.AddParameter("Auto");
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
+                        ConnectToExchange(powershell, runspace);
 
                         // First check for mobile devices and remove them
-                        command = new PSCommand();
+                        PSCommand command = new PSCommand();
                         command.AddCommand("Get-MobileDevice");
                         command.AddParameter("Mailbox", identity);
                         powershell.Commands = command;
@@ -624,43 +459,10 @@ namespace MSActor.Controllers
                         powershell.Runspace = runspace;
                         runspace.Open();
 
-                        PSCommand command = new PSCommand();
-                        // We get errors when the Exchange remote script tries to talk to us,
-                        // unless we redefine Write-Host to be an empty script.
-                        command.AddScript("Function Write-Host {}");
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
-
-                        // Load the Exchange Management Shell startup script
-                        command = new PSCommand();
-                        command.AddScript(RemoteExchangeScript);
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
-
-                        // Ask Exchange Management Shell to sniff the environment for a server and give us a session
-                        command = new PSCommand();
-                        command.AddCommand("Connect-ExchangeServer");
-                        command.AddParameter("Auto");
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
+                        ConnectToExchange(powershell, runspace);
 
                         // Now set the HiddenFromAddressListsEnabled flag
-                        command = new PSCommand();
+                        PSCommand command = new PSCommand();
                         command.AddCommand("Set-Mailbox");
                         command.AddParameter("Identity", identity);
                         command.AddParameter("HiddenFromAddressListsEnabled", Boolean.Parse(hidemailbox));
