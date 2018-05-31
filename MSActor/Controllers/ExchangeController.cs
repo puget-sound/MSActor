@@ -492,7 +492,19 @@ namespace MSActor.Controllers
                         command.AddParameter("Auto");
                         powershell.Commands = command;
                         powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
+
+                        bool connected = false;
+                        //if (powershell.Streams.Verbose.Contains(x => x.Message.StartsWith("Connected to")))
+                        foreach (VerboseRecord vr in powershell.Streams.Verbose)
+                        {
+                            if (vr.Message.StartsWith("Connected to"))
+                            {
+                                connected = true;
+                                break;
+                            }
+                        }
+
+                        if (!connected && powershell.Streams.Error.Count > 0)
                         {
                             throw powershell.Streams.Error[0].Exception;
                         }
