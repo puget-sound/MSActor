@@ -209,44 +209,31 @@ namespace MSActor.Controllers
                     powershell.Streams.ClearStreams();
                     bool adFinished = false;
                     int count = 0;
-                    while (adFinished == false || count > 2)
+                    String objectNotFoundMessage = "Cannot find an object with identity";
+                    while (adFinished == false && count < 3)
                     {
-                        try
+                        command = new PSCommand();
+                        command.AddCommand("get-aduser");
+                        command.AddParameter("identity", user.samaccountname);
+                        powershell.Commands = command;
+                        Collection<PSObject> check = powershell.Invoke();
+                        if (powershell.Streams.Error.Count > 0)
                         {
-                            command = new PSCommand();
-                            command.AddCommand("get-aduser");
-                            command.AddParameter("identity", user.samaccountname);
-                            powershell.Commands = command;
-                            Collection<PSObject> check = powershell.Invoke();
-                            if (powershell.Streams.Error.Count > 0)
+                            if (powershell.Streams.Error[0].Exception.Message.Contains(objectNotFoundMessage))
                             {
-                                throw powershell.Streams.Error[0].Exception;
-                            }
-
-                            powershell.Streams.ClearStreams();
-
-                            if (check.FirstOrDefault() != null)
-                            {
-                                adFinished = true;
-                            }
-
-                            count++;
-                        }
-                        catch(Exception e)
-                        {
-                            String toFind = "Cannot find an object with identity";
-                            Console.WriteLine(e.Message);
-                            if((new Regex(@"\A" + new Regex(@"\.|\$|\^|\{|\[|\(|\||\)|\*|\+|\?|\\").Replace(toFind, ch => @"\" + ch).Replace('_', '.').Replace("%", ".*") + @"\z", RegexOptions.Singleline).IsMatch(e.Message)))
-                            {
-
                                 System.Threading.Thread.Sleep(1000);
                             }
                             else
                             {
-                                throw e;
+                                throw powershell.Streams.Error[0].Exception;
                             }
-
                         }
+                        powershell.Streams.ClearStreams();
+                        if (check.FirstOrDefault() != null)
+                        {
+                            adFinished = true;
+                        }
+                        count++;
                     }
 
                     if(count > 2)
