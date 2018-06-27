@@ -535,6 +535,43 @@ namespace MSActor.Controllers
             }
             powershell.Streams.ClearStreams();
         }
+
+        public MSActorReturnMessageModel EnableDistributionGroup(string identity)
+        {
+            try
+            {
+                PSSessionOption option = new PSSessionOption();
+                using (PowerShell powershell = PowerShell.Create())
+                {
+                    using (Runspace runspace = RunspaceFactory.CreateRunspace())
+                    {
+                        powershell.Runspace = runspace;
+                        runspace.Open();
+
+                        ConnectToExchange(powershell, runspace);
+
+                        // Now set the HiddenFromAddressListsEnabled flag
+                        PSCommand command = new PSCommand();
+                        command.AddCommand("Enable-DistributionGroup");
+                        command.AddParameter("Identity", identity);
+                        powershell.Commands = command;
+                        powershell.Invoke();
+                        if (powershell.Streams.Error.Count > 0)
+                        {
+                            throw powershell.Streams.Error[0].Exception;
+                        }
+                        powershell.Streams.ClearStreams();
+
+                        MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                        return successMessage;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                return util.ReportError(e);
+            }
+        }
     }
 
 }
