@@ -12,6 +12,7 @@ using System.Net;
 using System.Security;
 using System.Security.Principal;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace MSActor.Controllers
@@ -206,6 +207,52 @@ namespace MSActor.Controllers
                         throw powershell.Streams.Error[0].Exception;
                     }
                     powershell.Streams.ClearStreams();
+                    bool adFinished = false;
+                    int count = 0;
+                    while (adFinished == false || count > 2)
+                    {
+                        try
+                        {
+                            command = new PSCommand();
+                            command.AddCommand("get-aduser");
+                            command.AddParameter("identity", user.samaccountname);
+                            powershell.Commands = command;
+                            Collection<PSObject> check = powershell.Invoke();
+                            if (powershell.Streams.Error.Count > 0)
+                            {
+                                throw powershell.Streams.Error[0].Exception;
+                            }
+
+                            powershell.Streams.ClearStreams();
+
+                            if (check.FirstOrDefault() != null)
+                            {
+                                adFinished = true;
+                            }
+
+                            count++;
+                        }
+                        catch(Exception e)
+                        {
+                            String toFind = "Cannot find an object with identity";
+                            Console.WriteLine(e.Message);
+                            if((new Regex(@"\A" + new Regex(@"\.|\$|\^|\{|\[|\(|\||\)|\*|\+|\?|\\").Replace(toFind, ch => @"\" + ch).Replace('_', '.').Replace("%", ".*") + @"\z", RegexOptions.Singleline).IsMatch(e.Message)))
+                            {
+
+                                System.Threading.Thread.Sleep(1000);
+                            }
+                            else
+                            {
+                                throw e;
+                            }
+
+                        }
+                    }
+
+                    if(count > 2)
+                    {
+                        throw new Exception("Retry count exceeded. May indicate account creation issue");
+                    }
                 }
 
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
