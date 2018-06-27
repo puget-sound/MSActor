@@ -550,8 +550,16 @@ namespace MSActor.Controllers
 
                         ConnectToExchange(powershell, runspace);
 
-                        // Now set the HiddenFromAddressListsEnabled flag
                         PSCommand command = new PSCommand();
+                        command.AddCommand("New-DistributionGroup");
+                        command.AddParameter("Name", identity);
+                        powershell.Commands = command;
+                        powershell.Invoke();
+                        if (powershell.Streams.Error.Count > 0)
+                        {
+                            throw powershell.Streams.Error[0].Exception;
+                        }
+                        command = new PSCommand();
                         command.AddCommand("Enable-DistributionGroup");
                         command.AddParameter("Identity", identity);
                         powershell.Commands = command;
