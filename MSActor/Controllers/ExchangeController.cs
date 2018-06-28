@@ -559,17 +559,7 @@ namespace MSActor.Controllers
                         {
                             throw powershell.Streams.Error[0].Exception;
                         }
-                        command = new PSCommand();
-                        command.AddCommand("Enable-DistributionGroup");
-                        command.AddParameter("Identity", identity);
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
                         powershell.Streams.ClearStreams();
-
                         MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                         return successMessage;
                     }
