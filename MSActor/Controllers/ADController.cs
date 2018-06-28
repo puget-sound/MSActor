@@ -390,16 +390,8 @@ namespace MSActor.Controllers
 
                     if (group_category == "distribution")
                     {
-                        command = new PSCommand();
-                        command.AddCommand("enable-distributiongroup");
-                        command.AddParameter("identity", group_name);
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
+                        ExchangeController control = new ExchangeController();
+                        return control.EnableDistributionGroup(group_name);
                     }
 
                     MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
