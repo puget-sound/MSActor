@@ -261,10 +261,13 @@ namespace MSActor.Controllers
         /// <param name="value"></param>
         /// <returns></returns>
         public MSActorReturnMessageModel ChangeUserValueDriver(string employeeid, string samaccountname, string field, string value)
-        {
-            UtilityController util = new UtilityController();
+        {  
             try
             {
+                if(value == "")
+                {
+                    value = null;
+                }
                 string dName;
                 PSObject user = util.getADUser(employeeid, samaccountname);
                 if (user == null)
