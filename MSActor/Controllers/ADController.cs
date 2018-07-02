@@ -375,6 +375,12 @@ namespace MSActor.Controllers
             {
                 using (PowerShell powershell = PowerShell.Create())
                 {
+                    if (group_category == "distribution")
+                    {
+                        ExchangeController control = new ExchangeController();
+                        return control.EnableDistributionGroup(group_name);
+                    }
+
                     PSCommand command = new PSCommand();
                     command.AddCommand("New-ADGroup");
                     command.AddParameter("name", group_name);
@@ -391,11 +397,6 @@ namespace MSActor.Controllers
                     }
                     powershell.Streams.ClearStreams();
 
-                    if (group_category == "distribution")
-                    {
-                        ExchangeController control = new ExchangeController();
-                        return control.EnableDistributionGroup(group_name);
-                    }
 
                     MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                     return successMessage;
