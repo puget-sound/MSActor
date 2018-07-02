@@ -549,5 +549,20 @@ namespace MSActor.Controllers
                 return util.ReportError(e);
             }
         }
+
+        [Route("enabledistributiongroup")]
+        [HttpPost]
+        public MSActorReturnMessageModel EnableDistributionGroup([FromBody] EnableDistributionGroupModel input)
+        {
+            try
+            {
+                ExchangeController control = new ExchangeController();
+                return control.EnableDistributionGroup(input.identity);
+            }
+            catch(Exception e)
+            {
+                return util.ReportError(e);
+            }
+        }
     }
 }

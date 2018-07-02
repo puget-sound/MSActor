@@ -12,6 +12,7 @@ using System.Net;
 using System.Security;
 using System.Security.Principal;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace MSActor.Controllers
@@ -206,6 +207,39 @@ namespace MSActor.Controllers
                         throw powershell.Streams.Error[0].Exception;
                     }
                     powershell.Streams.ClearStreams();
+                    bool adFinished = false;
+                    int count = 0;
+                    String objectNotFoundMessage = "Cannot find an object with identity";
+                    while (adFinished == false && count < 3)
+                    {
+                        command = new PSCommand();
+                        command.AddCommand("get-aduser");
+                        command.AddParameter("identity", user.samaccountname);
+                        powershell.Commands = command;
+                        Collection<PSObject> check = powershell.Invoke();
+                        if (powershell.Streams.Error.Count > 0)
+                        {
+                            if (powershell.Streams.Error[0].Exception.Message.Contains(objectNotFoundMessage))
+                            {
+                                System.Threading.Thread.Sleep(1000);
+                            }
+                            else
+                            {
+                                throw powershell.Streams.Error[0].Exception;
+                            }
+                        }
+                        powershell.Streams.ClearStreams();
+                        if (check.FirstOrDefault() != null)
+                        {
+                            adFinished = true;
+                        }
+                        count++;
+                    }
+
+                    if(count > 2)
+                    {
+                        throw new Exception("Retry count exceeded. May indicate account creation issue");
+                    }
                 }
 
                 MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
@@ -227,10 +261,13 @@ namespace MSActor.Controllers
         /// <param name="value"></param>
         /// <returns></returns>
         public MSActorReturnMessageModel ChangeUserValueDriver(string employeeid, string samaccountname, string field, string value)
-        {
-            UtilityController util = new UtilityController();
+        {  
             try
             {
+                if(value == "")
+                {
+                    value = null;
+                }
                 string dName;
                 PSObject user = util.getADUser(employeeid, samaccountname);
                 if (user == null)
@@ -356,16 +393,8 @@ namespace MSActor.Controllers
 
                     if (group_category == "distribution")
                     {
-                        command = new PSCommand();
-                        command.AddCommand("enable-distributiongroup");
-                        command.AddParameter("identity", group_name);
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
+                        ExchangeController control = new ExchangeController();
+                        return control.EnableDistributionGroup(group_name);
                     }
 
                     MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
