@@ -550,7 +550,7 @@ namespace MSActor.Controllers
             }
         }
 
-        [Route("enabledistributiongroup")]
+        /*[Route("enabledistributiongroup")]
         [HttpPost]
         public MSActorReturnMessageModel EnableDistributionGroup([FromBody] EnableDistributionGroupModel input)
         {
@@ -563,6 +563,6 @@ namespace MSActor.Controllers
             {
                 return util.ReportError(e);
             }
-        }
+        }*/
     }
 }

@@ -378,7 +378,7 @@ namespace MSActor.Controllers
                     if (group_category == "distribution")
                     {
                         ExchangeController control = new ExchangeController();
-                        return control.EnableDistributionGroup(group_name);
+                        return control.EnableDistributionGroup(group_name, group_ad_path, group_description);
                     }
 
                     PSCommand command = new PSCommand();
