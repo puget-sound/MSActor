@@ -387,26 +387,54 @@ namespace MSActor.Controllers
                             // Then we follow up setting some attributes that Exchange's cmdlet won't set
                             string distinguishedName = "CN=" + group_name + "," + group_ad_path;
 
-                            command = new PSCommand();
-                            command.AddCommand("Set-ADGroup");
-                            command.AddParameter("identity", distinguishedName);
-                            command.AddParameter("description", group_description);
-                            command.AddParameter("displayname", group_name);
-                            if (group_info != null)
+                            bool setADGroupComplete = false;
+                            int count = 0;
+                            string objectNotFoundMessage = "Directory object not found";
+                            while (setADGroupComplete == false && count < 3)
                             {
-                                Hashtable attrHash = new Hashtable
+                                command = new PSCommand();
+                                command.AddCommand("Set-ADGroup");
+                                command.AddParameter("identity", distinguishedName);
+                                if (group_description != "")
                                 {
-                                    {"info", group_info }
-                                };
-                                command.AddParameter("Add", attrHash);
+                                    command.AddParameter("description", group_description);
+                                }
+                                command.AddParameter("displayname", group_name);
+                                if (group_info != "")
+                                {
+                                    Hashtable attrHash = new Hashtable
+                                    {
+                                        {"info", group_info }
+                                    };
+                                    command.AddParameter("Add", attrHash);
+                                }
+                                powershell.Commands = command;
+                                powershell.Invoke();
+                                if (powershell.Streams.Error.Count > 0)
+                                {
+                                    if (powershell.Streams.Error[0].Exception.Message.Contains(objectNotFoundMessage))
+                                    {
+                                        System.Threading.Thread.Sleep(1000);
+                                    }
+                                    else
+                                    {
+                                        throw powershell.Streams.Error[0].Exception;
+                                    }
+                                }
+                                else
+                                {
+                                    setADGroupComplete = true;
+                                }
+                                count++;
                             }
-                            powershell.Commands = command;
-                            powershell.Invoke();
-                            if (powershell.Streams.Error.Count > 0)
+                            if (count == 3)
                             {
-                                throw powershell.Streams.Error[0].Exception;
+                                throw new Exception("Retry count exceeded. May indicate distribution group creation issue");
                             }
-                            return new MSActorReturnMessageModel(SuccessCode, "");
+                            else
+                            {
+                                return new MSActorReturnMessageModel(SuccessCode, "");
+                            }
                         }
                         else
                         {
@@ -417,12 +445,15 @@ namespace MSActor.Controllers
                     command = new PSCommand();
                     command.AddCommand("New-ADGroup");
                     command.AddParameter("name", group_name);
-                    command.AddParameter("description", group_description);
+                    if (group_description != "")
+                    {
+                        command.AddParameter("description", group_description);
+                    }
                     command.AddParameter("groupcategory", group_category);
                     command.AddParameter("displayname", group_name);
                     command.AddParameter("path", group_ad_path);
                     command.AddParameter("groupscope", group_scope);
-                    if (group_info != null)
+                    if (group_info != "")
                     {
                         Hashtable attrHash = new Hashtable
                         {
