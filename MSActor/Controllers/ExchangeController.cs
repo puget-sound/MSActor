@@ -536,7 +536,7 @@ namespace MSActor.Controllers
             powershell.Streams.ClearStreams();
         }
 
-        public MSActorReturnMessageModel EnableDistributionGroup(string identity)
+        public MSActorReturnMessageModel EnableDistributionGroup(string identity, string path, string description, string info)
         {
             try
             {
@@ -553,6 +553,7 @@ namespace MSActor.Controllers
                         PSCommand command = new PSCommand();
                         command.AddCommand("New-DistributionGroup");
                         command.AddParameter("Name", identity);
+                        command.AddParameter("OrganizationalUnit", path);
                         powershell.Commands = command;
                         powershell.Invoke();
                         if (powershell.Streams.Error.Count > 0)
@@ -560,6 +561,7 @@ namespace MSActor.Controllers
                             throw powershell.Streams.Error[0].Exception;
                         }
                         powershell.Streams.ClearStreams();
+
                         MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                         return successMessage;
                     }

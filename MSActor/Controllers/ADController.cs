@@ -236,7 +236,7 @@ namespace MSActor.Controllers
                         count++;
                     }
 
-                    if(count > 2)
+                    if(count == 3)
                     {
                         throw new Exception("Retry count exceeded. May indicate account creation issue");
                     }
@@ -375,14 +375,92 @@ namespace MSActor.Controllers
             {
                 using (PowerShell powershell = PowerShell.Create())
                 {
-                    PSCommand command = new PSCommand();
+                    PSCommand command;
+
+                    if (group_category == "distribution")
+                    {
+                        // First we need Exchange to enable the distribution group
+                        ExchangeController control = new ExchangeController();
+                        MSActorReturnMessageModel msg = control.EnableDistributionGroup(group_name, group_ad_path, group_description, group_info);
+                        if (msg.code == "CMP")
+                        {
+                            // Then we follow up setting some attributes that Exchange's cmdlet won't set
+                            string distinguishedName = "CN=" + group_name + "," + group_ad_path;
+
+                            bool setADGroupComplete = false;
+                            int count = 0;
+                            string objectNotFoundMessage = "Directory object not found";
+                            while (setADGroupComplete == false && count < 3)
+                            {
+                                command = new PSCommand();
+                                command.AddCommand("Set-ADGroup");
+                                command.AddParameter("identity", distinguishedName);
+                                if (group_description != "")
+                                {
+                                    command.AddParameter("description", group_description);
+                                }
+                                command.AddParameter("displayname", group_name);
+                                if (group_info != "")
+                                {
+                                    Hashtable attrHash = new Hashtable
+                                    {
+                                        {"info", group_info }
+                                    };
+                                    command.AddParameter("Add", attrHash);
+                                }
+                                powershell.Commands = command;
+                                powershell.Invoke();
+                                if (powershell.Streams.Error.Count > 0)
+                                {
+                                    if (powershell.Streams.Error[0].Exception.Message.Contains(objectNotFoundMessage))
+                                    {
+                                        System.Threading.Thread.Sleep(1000);
+                                    }
+                                    else
+                                    {
+                                        throw powershell.Streams.Error[0].Exception;
+                                    }
+                                }
+                                else
+                                {
+                                    setADGroupComplete = true;
+                                }
+                                count++;
+                            }
+                            if (count == 3)
+                            {
+                                throw new Exception("Retry count exceeded. May indicate distribution group creation issue");
+                            }
+                            else
+                            {
+                                return new MSActorReturnMessageModel(SuccessCode, "");
+                            }
+                        }
+                        else
+                        {
+                            return msg;
+                        }
+                    }
+
+                    command = new PSCommand();
                     command.AddCommand("New-ADGroup");
                     command.AddParameter("name", group_name);
-                    command.AddParameter("description", group_description);
+                    if (group_description != "")
+                    {
+                        command.AddParameter("description", group_description);
+                    }
                     command.AddParameter("groupcategory", group_category);
-                    command.AddParameter("displayname", group_info);
+                    command.AddParameter("displayname", group_name);
                     command.AddParameter("path", group_ad_path);
                     command.AddParameter("groupscope", group_scope);
+                    if (group_info != "")
+                    {
+                        Hashtable attrHash = new Hashtable
+                        {
+                            {"info", group_info }
+                        };
+                        command.AddParameter("OtherAttributes", attrHash);
+                    }
                     powershell.Commands = command;
                     powershell.Invoke();
                     if (powershell.Streams.Error.Count > 0)
@@ -391,11 +469,6 @@ namespace MSActor.Controllers
                     }
                     powershell.Streams.ClearStreams();
 
-                    if (group_category == "distribution")
-                    {
-                        ExchangeController control = new ExchangeController();
-                        return control.EnableDistributionGroup(group_name);
-                    }
 
                     MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                     return successMessage;
