@@ -562,9 +562,11 @@ namespace MSActor.Controllers
                         }
                         powershell.Streams.ClearStreams();
 
+                        string distinguishedName = identity + "," + path;
+
                         command = new PSCommand();
                         command.AddCommand("Set-ADGroup");
-                        command.AddParameter("identity", identity);
+                        command.AddParameter("identity", distinguishedName);
                         command.AddParameter("description", description);
                         powershell.Commands = command;
                         powershell.Invoke();
