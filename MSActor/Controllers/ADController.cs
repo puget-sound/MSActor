@@ -236,7 +236,7 @@ namespace MSActor.Controllers
                         count++;
                     }
 
-                    if(count > 2)
+                    if(count == 3)
                     {
                         throw new Exception("Retry count exceeded. May indicate account creation issue");
                     }
@@ -375,20 +375,61 @@ namespace MSActor.Controllers
             {
                 using (PowerShell powershell = PowerShell.Create())
                 {
+                    PSCommand command;
+
                     if (group_category == "distribution")
                     {
+                        // First we need Exchange to enable the distribution group
                         ExchangeController control = new ExchangeController();
-                        return control.EnableDistributionGroup(group_name, group_ad_path, group_description);
+                        MSActorReturnMessageModel msg = control.EnableDistributionGroup(group_name, group_ad_path, group_description, group_info);
+                        if (msg.code == "CMP")
+                        {
+                            // Then we follow up setting some attributes that Exchange's cmdlet won't set
+                            string distinguishedName = "CN=" + group_name + "," + group_ad_path;
+
+                            command = new PSCommand();
+                            command.AddCommand("Set-ADGroup");
+                            command.AddParameter("identity", distinguishedName);
+                            command.AddParameter("description", group_description);
+                            command.AddParameter("displayname", group_name);
+                            if (group_info != null)
+                            {
+                                Hashtable attrHash = new Hashtable
+                                {
+                                    {"info", group_info }
+                                };
+                                command.AddParameter("Add", attrHash);
+                            }
+                            powershell.Commands = command;
+                            powershell.Invoke();
+                            if (powershell.Streams.Error.Count > 0)
+                            {
+                                throw powershell.Streams.Error[0].Exception;
+                            }
+                            return new MSActorReturnMessageModel(SuccessCode, "");
+                        }
+                        else
+                        {
+                            return msg;
+                        }
                     }
 
-                    PSCommand command = new PSCommand();
+                    command = new PSCommand();
                     command.AddCommand("New-ADGroup");
                     command.AddParameter("name", group_name);
                     command.AddParameter("description", group_description);
                     command.AddParameter("groupcategory", group_category);
-                    command.AddParameter("displayname", group_info);
+                    command.AddParameter("displayname", group_name);
                     command.AddParameter("path", group_ad_path);
                     command.AddParameter("groupscope", group_scope);
+                    if (group_info != null)
+                    {
+                        Hashtable attrHash = new Hashtable
+                        {
+                            {"info", group_info }
+                        };
+                        command.AddParameter("OtherAttributes", attrHash);
+                    }
                     powershell.Commands = command;
                     powershell.Invoke();
                     if (powershell.Streams.Error.Count > 0)

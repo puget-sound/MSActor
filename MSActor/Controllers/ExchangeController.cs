@@ -536,7 +536,7 @@ namespace MSActor.Controllers
             powershell.Streams.ClearStreams();
         }
 
-        public MSActorReturnMessageModel EnableDistributionGroup(string identity, string path, string description)
+        public MSActorReturnMessageModel EnableDistributionGroup(string identity, string path, string description, string info)
         {
             try
             {
@@ -562,19 +562,6 @@ namespace MSActor.Controllers
                         }
                         powershell.Streams.ClearStreams();
 
-                        string distinguishedName = identity + "," + path;
-
-                        command = new PSCommand();
-                        command.AddCommand("Set-ADGroup");
-                        command.AddParameter("identity", distinguishedName);
-                        command.AddParameter("description", description);
-                        powershell.Commands = command;
-                        powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
-                        powershell.Streams.ClearStreams();
                         MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                         return successMessage;
                     }
