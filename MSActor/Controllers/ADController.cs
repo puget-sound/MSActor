@@ -207,33 +207,49 @@ namespace MSActor.Controllers
                         throw powershell.Streams.Error[0].Exception;
                     }
                     powershell.Streams.ClearStreams();
+
                     bool adFinished = false;
                     int count = 0;
                     String objectNotFoundMessage = "Cannot find an object with identity";
                     while (adFinished == false && count < 3)
                     {
-                        command = new PSCommand();
-                        command.AddCommand("get-aduser");
-                        command.AddParameter("identity", user.samaccountname);
-                        powershell.Commands = command;
-                        Collection<PSObject> check = powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
+                        try
                         {
-                            if (powershell.Streams.Error[0].Exception.Message.Contains(objectNotFoundMessage))
+                            command = new PSCommand();
+                            command.AddCommand("get-aduser");
+                            command.AddParameter("identity", user.samaccountname);
+                            powershell.Commands = command;
+                            Collection<PSObject> check = powershell.Invoke();
+                            if (powershell.Streams.Error.Count > 0)
+                            {
+                                if (powershell.Streams.Error[0].Exception.Message.Contains(objectNotFoundMessage))
+                                {
+                                    System.Threading.Thread.Sleep(1000);
+                                }
+                                else
+                                {
+                                    throw powershell.Streams.Error[0].Exception;
+                                }
+                            }
+                            powershell.Streams.ClearStreams();
+                            if (check.FirstOrDefault() != null)
+                            {
+                                adFinished = true;
+                            }
+                            count++;
+                        }
+                        catch(Exception e)
+                        {
+                            if (e.Message.Contains(objectNotFoundMessage))
                             {
                                 System.Threading.Thread.Sleep(1000);
+                                count++;
                             }
                             else
                             {
-                                throw powershell.Streams.Error[0].Exception;
+                                throw e;
                             }
                         }
-                        powershell.Streams.ClearStreams();
-                        if (check.FirstOrDefault() != null)
-                        {
-                            adFinished = true;
-                        }
-                        count++;
                     }
 
                     if(count == 3)
