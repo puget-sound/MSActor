@@ -417,40 +417,55 @@ namespace MSActor.Controllers
                             string objectNotFoundMessage = "Directory object not found";
                             while (setADGroupComplete == false && count < 3)
                             {
-                                command = new PSCommand();
-                                command.AddCommand("Set-ADGroup");
-                                command.AddParameter("identity", distinguishedName);
-                                if (group_description != "")
+                                try
                                 {
-                                    command.AddParameter("description", group_description);
-                                }
-                                command.AddParameter("displayname", group_name);
-                                if (group_info != "")
-                                {
-                                    Hashtable attrHash = new Hashtable
+                                    command = new PSCommand();
+                                    command.AddCommand("Set-ADGroup");
+                                    command.AddParameter("identity", distinguishedName);
+                                    if (group_description != "")
                                     {
-                                        {"info", group_info }
-                                    };
-                                    command.AddParameter("Add", attrHash);
-                                }
-                                powershell.Commands = command;
-                                powershell.Invoke();
-                                if (powershell.Streams.Error.Count > 0)
-                                {
-                                    if (powershell.Streams.Error[0].Exception.Message.Contains(objectNotFoundMessage))
+                                        command.AddParameter("description", group_description);
+                                    }
+                                    command.AddParameter("displayname", group_name);
+                                    if (group_info != "")
                                     {
-                                        System.Threading.Thread.Sleep(1000);
+                                        Hashtable attrHash = new Hashtable
+                                        {
+                                            {"info", group_info }
+                                        };
+                                        command.AddParameter("Add", attrHash);
+                                    }
+                                    powershell.Commands = command;
+                                    powershell.Invoke();
+                                    if (powershell.Streams.Error.Count > 0)
+                                    {
+                                        if (powershell.Streams.Error[0].Exception.Message.Contains(objectNotFoundMessage))
+                                        {
+                                            System.Threading.Thread.Sleep(1000);
+                                        }
+                                        else
+                                        {
+                                            throw powershell.Streams.Error[0].Exception;
+                                        }
                                     }
                                     else
                                     {
-                                        throw powershell.Streams.Error[0].Exception;
+                                        setADGroupComplete = true;
+                                    }
+                                    count++;
+                                }
+                                catch (Exception e)
+                                {
+                                    if (e.Message.Contains(objectNotFoundMessage))
+                                    {
+                                        System.Threading.Thread.Sleep(1000);
+                                        count++;
+                                    }
+                                    else
+                                    {
+                                        throw e;
                                     }
                                 }
-                                else
-                                {
-                                    setADGroupComplete = true;
-                                }
-                                count++;
                             }
                             if (count == 3)
                             {
