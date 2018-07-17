@@ -298,11 +298,20 @@ namespace MSActor.Controllers
                     command.AddParameter("Identity", dName);
                     if (field.ToLower() == "ipphone")
                     {
-                        Hashtable attrHash = new Hashtable
+                        if (value != null)
                         {
-                            { field, value }
-                        };
-                        command.AddParameter("replace", attrHash);
+                            Hashtable attrHash = new Hashtable
+                            {
+                                { field, value }
+                            };
+                            command.AddParameter("replace", attrHash);
+                        }
+                        else
+                        {
+                            String[] attrArray = new String[1];
+                            attrArray[0] = field;
+                            command.AddParameter("clear", attrArray);
+                        }
                     }
                     else
                     {
