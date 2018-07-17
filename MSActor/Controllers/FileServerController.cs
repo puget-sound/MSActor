@@ -388,7 +388,7 @@ namespace MSActor.Controllers
                         GroupCollection groups = Regex.Match(pathResultLine, @"(\S+)\s+(.+)$").Groups;
                         // Group 2 (#3 above) is the path value.
                         string existingPath = groups[2].Value;
-                        if (path != existingPath)
+                        if (!String.Equals(path, existingPath, StringComparison.OrdinalIgnoreCase))
                         {
                             throw new Exception(String.Format("Share '{0}' is for path '{1}', different than specified.", name, existingPath));
                         }
