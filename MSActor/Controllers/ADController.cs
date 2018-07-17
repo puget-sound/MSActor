@@ -606,10 +606,25 @@ namespace MSActor.Controllers
                     command.AddParameter("member", group_member);
                     command.AddParameter("confirm", false);
                     powershell.Commands = command;
-                    powershell.Invoke();
+
+                    string notAMemberMessage = "The specified account name is not a member of the group";
+                    try
+                    {
+                        powershell.Invoke();
+                    }
+                    catch (Exception e)
+                    {
+                        if (!e.Message.Contains(notAMemberMessage))
+                        {
+                            throw e;
+                        }
+                    }
                     if (powershell.Streams.Error.Count > 0)
                     {
-                        throw powershell.Streams.Error[0].Exception;
+                        if (!powershell.Streams.Error[0].Exception.Message.Contains(notAMemberMessage))
+                        {
+                            throw powershell.Streams.Error[0].Exception;
+                        }
                     }
                     powershell.Streams.ClearStreams();
 
