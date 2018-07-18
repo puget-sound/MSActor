@@ -729,13 +729,14 @@ namespace MSActor.Controllers
         public MSActorReturnMessageModel RemoveADObject(string employeeid, string samaccountname)
         {
             UtilityController util = new UtilityController();
+            MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
             try
             {
                 string dName;
                 PSObject user = util.getADUser(employeeid, samaccountname);
                 if (user == null)
                 {
-                    throw new Exception("User was not found.");
+                    return successMessage;
                 }
                 Debug.WriteLine(user);
                 dName = user.Properties["DistinguishedName"].Value.ToString();
@@ -757,7 +758,6 @@ namespace MSActor.Controllers
                     }
                     powershell.Streams.ClearStreams();
 
-                    MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                     return successMessage;
                 }
             }
