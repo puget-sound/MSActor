@@ -288,6 +288,8 @@ namespace MSActor.Controllers
                         command.AddCommand("New-MoveRequest");
                         command.AddParameter("Identity", identity);
                         command.AddParameter("TargetDatabase", targetdatabase);
+                        command.AddParameter("BadItemLimit", 1000);
+                        command.AddParameter("AcceptLargeDataLoss");
                         powershell.Commands = command;
                         powershell.Invoke();
                         if (powershell.Streams.Error.Count > 0)
