@@ -29,6 +29,8 @@ namespace MSActor.Controllers
     {
         UtilityController util;
         string cantFindObjectError = "Cannot find an object with identity";
+        string accountExistsError = "The specified account already exists";
+        string groupExistsError = "The specified group already exists";
         public ADController()
         {
             util = new UtilityController();
@@ -264,7 +266,13 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                return util.ReportError(e);
+                if(!e.Message.Contains(accountExistsError))
+                {
+                    return util.ReportError(e);
+                }
+                MSActorReturnMessageModel successMesage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMesage;
+
             }
         }
 
@@ -517,7 +525,12 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                return util.ReportError(e);
+                if(!e.Message.Contains(groupExistsError))
+                {
+                    return util.ReportError(e);
+                }
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
             }
         }
 
