@@ -28,6 +28,9 @@ namespace MSActor.Controllers
     public class ADController
     {
         UtilityController util;
+        string cantFindObjectError = "Cannot find an object with identity";
+        string accountExistsError = "The specified account already exists";
+        string groupExistsError = "The specified group already exists";
         public ADController()
         {
             util = new UtilityController();
@@ -263,7 +266,13 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                return util.ReportError(e);
+                if(!e.Message.Contains(accountExistsError))
+                {
+                    return util.ReportError(e);
+                }
+                MSActorReturnMessageModel successMesage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMesage;
+
             }
         }
 
@@ -516,7 +525,12 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                return util.ReportError(e);
+                if(!e.Message.Contains(groupExistsError))
+                {
+                    return util.ReportError(e);
+                }
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
             }
         }
 
@@ -527,6 +541,7 @@ namespace MSActor.Controllers
         /// <returns></returns>
         public MSActorReturnMessageModel RemoveADGroup(string group_identity)
         {
+            
             UtilityController util = new UtilityController();
             try
             {
@@ -550,7 +565,13 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                return util.ReportError(e);
+                if(!e.Message.Contains(cantFindObjectError))
+                {
+                    return util.ReportError(e);
+                }
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
+
             }
         }
 
@@ -596,6 +617,7 @@ namespace MSActor.Controllers
         /// <returns></returns>
         public MSActorReturnMessageModel RemoveADGroupMember(string group_identity, string group_member)
         {
+            string notAMemberMessage = "The specified account name is not a member of the group";
             try
             {
                 using (PowerShell powershell = PowerShell.Create())
@@ -607,7 +629,7 @@ namespace MSActor.Controllers
                     command.AddParameter("confirm", false);
                     powershell.Commands = command;
 
-                    string notAMemberMessage = "The specified account name is not a member of the group";
+                   
                     try
                     {
                         powershell.Invoke();
@@ -634,7 +656,12 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                return util.ReportError(e);
+                if(!e.Message.Contains(notAMemberMessage) && !e.Message.Contains(cantFindObjectError))
+                {
+                    return util.ReportError(e);
+                }
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
             }
         }
 
@@ -728,6 +755,7 @@ namespace MSActor.Controllers
         /// <returns></returns>
         public MSActorReturnMessageModel RemoveADObject(string employeeid, string samaccountname)
         {
+            
             UtilityController util = new UtilityController();
             MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
             try
@@ -763,7 +791,14 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                return util.ReportError(e);
+                if (!e.Message.Contains(cantFindObjectError))
+                {
+                    return util.ReportError(e);
+                }
+                
+                return successMessage;
+
+            
             }
         }
 
