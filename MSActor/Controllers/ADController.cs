@@ -28,6 +28,9 @@ namespace MSActor.Controllers
     public class ADController
     {
         UtilityController util;
+        string cantFindObjectError = "Cannot find an object with identity";
+        string accountExistsError = "The specified account already exists";
+        string groupExistsError = "The specified group already exists";
         public ADController()
         {
             util = new UtilityController();
@@ -207,33 +210,49 @@ namespace MSActor.Controllers
                         throw powershell.Streams.Error[0].Exception;
                     }
                     powershell.Streams.ClearStreams();
+
                     bool adFinished = false;
                     int count = 0;
                     String objectNotFoundMessage = "Cannot find an object with identity";
                     while (adFinished == false && count < 3)
                     {
-                        command = new PSCommand();
-                        command.AddCommand("get-aduser");
-                        command.AddParameter("identity", user.samaccountname);
-                        powershell.Commands = command;
-                        Collection<PSObject> check = powershell.Invoke();
-                        if (powershell.Streams.Error.Count > 0)
+                        try
                         {
-                            if (powershell.Streams.Error[0].Exception.Message.Contains(objectNotFoundMessage))
+                            command = new PSCommand();
+                            command.AddCommand("get-aduser");
+                            command.AddParameter("identity", user.samaccountname);
+                            powershell.Commands = command;
+                            Collection<PSObject> check = powershell.Invoke();
+                            if (powershell.Streams.Error.Count > 0)
+                            {
+                                if (powershell.Streams.Error[0].Exception.Message.Contains(objectNotFoundMessage))
+                                {
+                                    System.Threading.Thread.Sleep(1000);
+                                }
+                                else
+                                {
+                                    throw powershell.Streams.Error[0].Exception;
+                                }
+                            }
+                            powershell.Streams.ClearStreams();
+                            if (check.FirstOrDefault() != null)
+                            {
+                                adFinished = true;
+                            }
+                            count++;
+                        }
+                        catch(Exception e)
+                        {
+                            if (e.Message.Contains(objectNotFoundMessage))
                             {
                                 System.Threading.Thread.Sleep(1000);
+                                count++;
                             }
                             else
                             {
-                                throw powershell.Streams.Error[0].Exception;
+                                throw e;
                             }
                         }
-                        powershell.Streams.ClearStreams();
-                        if (check.FirstOrDefault() != null)
-                        {
-                            adFinished = true;
-                        }
-                        count++;
                     }
 
                     if(count == 3)
@@ -247,7 +266,13 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                return util.ReportError(e);
+                if(!e.Message.Contains(accountExistsError))
+                {
+                    return util.ReportError(e);
+                }
+                MSActorReturnMessageModel successMesage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMesage;
+
             }
         }
 
@@ -282,11 +307,20 @@ namespace MSActor.Controllers
                     command.AddParameter("Identity", dName);
                     if (field.ToLower() == "ipphone")
                     {
-                        Hashtable attrHash = new Hashtable
+                        if (value != null)
                         {
-                            { field, value }
-                        };
-                        command.AddParameter("replace", attrHash);
+                            Hashtable attrHash = new Hashtable
+                            {
+                                { field, value }
+                            };
+                            command.AddParameter("replace", attrHash);
+                        }
+                        else
+                        {
+                            String[] attrArray = new String[1];
+                            attrArray[0] = field;
+                            command.AddParameter("clear", attrArray);
+                        }
                     }
                     else
                     {
@@ -392,40 +426,55 @@ namespace MSActor.Controllers
                             string objectNotFoundMessage = "Directory object not found";
                             while (setADGroupComplete == false && count < 3)
                             {
-                                command = new PSCommand();
-                                command.AddCommand("Set-ADGroup");
-                                command.AddParameter("identity", distinguishedName);
-                                if (group_description != "")
+                                try
                                 {
-                                    command.AddParameter("description", group_description);
-                                }
-                                command.AddParameter("displayname", group_name);
-                                if (group_info != "")
-                                {
-                                    Hashtable attrHash = new Hashtable
+                                    command = new PSCommand();
+                                    command.AddCommand("Set-ADGroup");
+                                    command.AddParameter("identity", distinguishedName);
+                                    if (group_description != "")
                                     {
-                                        {"info", group_info }
-                                    };
-                                    command.AddParameter("Add", attrHash);
-                                }
-                                powershell.Commands = command;
-                                powershell.Invoke();
-                                if (powershell.Streams.Error.Count > 0)
-                                {
-                                    if (powershell.Streams.Error[0].Exception.Message.Contains(objectNotFoundMessage))
+                                        command.AddParameter("description", group_description);
+                                    }
+                                    command.AddParameter("displayname", group_name);
+                                    if (group_info != "")
                                     {
-                                        System.Threading.Thread.Sleep(1000);
+                                        Hashtable attrHash = new Hashtable
+                                        {
+                                            {"info", group_info }
+                                        };
+                                        command.AddParameter("Add", attrHash);
+                                    }
+                                    powershell.Commands = command;
+                                    powershell.Invoke();
+                                    if (powershell.Streams.Error.Count > 0)
+                                    {
+                                        if (powershell.Streams.Error[0].Exception.Message.Contains(objectNotFoundMessage))
+                                        {
+                                            System.Threading.Thread.Sleep(1000);
+                                        }
+                                        else
+                                        {
+                                            throw powershell.Streams.Error[0].Exception;
+                                        }
                                     }
                                     else
                                     {
-                                        throw powershell.Streams.Error[0].Exception;
+                                        setADGroupComplete = true;
+                                    }
+                                    count++;
+                                }
+                                catch (Exception e)
+                                {
+                                    if (e.Message.Contains(objectNotFoundMessage))
+                                    {
+                                        System.Threading.Thread.Sleep(1000);
+                                        count++;
+                                    }
+                                    else
+                                    {
+                                        throw e;
                                     }
                                 }
-                                else
-                                {
-                                    setADGroupComplete = true;
-                                }
-                                count++;
                             }
                             if (count == 3)
                             {
@@ -476,7 +525,12 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                return util.ReportError(e);
+                if(!e.Message.Contains(groupExistsError))
+                {
+                    return util.ReportError(e);
+                }
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
             }
         }
 
@@ -487,6 +541,7 @@ namespace MSActor.Controllers
         /// <returns></returns>
         public MSActorReturnMessageModel RemoveADGroup(string group_identity)
         {
+            
             UtilityController util = new UtilityController();
             try
             {
@@ -510,7 +565,13 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                return util.ReportError(e);
+                if(!e.Message.Contains(cantFindObjectError))
+                {
+                    return util.ReportError(e);
+                }
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
+
             }
         }
 
@@ -556,6 +617,7 @@ namespace MSActor.Controllers
         /// <returns></returns>
         public MSActorReturnMessageModel RemoveADGroupMember(string group_identity, string group_member)
         {
+            string notAMemberMessage = "The specified account name is not a member of the group";
             try
             {
                 using (PowerShell powershell = PowerShell.Create())
@@ -566,10 +628,25 @@ namespace MSActor.Controllers
                     command.AddParameter("member", group_member);
                     command.AddParameter("confirm", false);
                     powershell.Commands = command;
-                    powershell.Invoke();
+
+                   
+                    try
+                    {
+                        powershell.Invoke();
+                    }
+                    catch (Exception e)
+                    {
+                        if (!e.Message.Contains(notAMemberMessage))
+                        {
+                            throw e;
+                        }
+                    }
                     if (powershell.Streams.Error.Count > 0)
                     {
-                        throw powershell.Streams.Error[0].Exception;
+                        if (!powershell.Streams.Error[0].Exception.Message.Contains(notAMemberMessage))
+                        {
+                            throw powershell.Streams.Error[0].Exception;
+                        }
                     }
                     powershell.Streams.ClearStreams();
 
@@ -579,7 +656,12 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                return util.ReportError(e);
+                if(!e.Message.Contains(notAMemberMessage) && !e.Message.Contains(cantFindObjectError))
+                {
+                    return util.ReportError(e);
+                }
+                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                return successMessage;
             }
         }
 
@@ -673,14 +755,16 @@ namespace MSActor.Controllers
         /// <returns></returns>
         public MSActorReturnMessageModel RemoveADObject(string employeeid, string samaccountname)
         {
+            
             UtilityController util = new UtilityController();
+            MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
             try
             {
                 string dName;
                 PSObject user = util.getADUser(employeeid, samaccountname);
                 if (user == null)
                 {
-                    throw new Exception("User was not found.");
+                    return successMessage;
                 }
                 Debug.WriteLine(user);
                 dName = user.Properties["DistinguishedName"].Value.ToString();
@@ -702,13 +786,19 @@ namespace MSActor.Controllers
                     }
                     powershell.Streams.ClearStreams();
 
-                    MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                     return successMessage;
                 }
             }
             catch (Exception e)
             {
-                return util.ReportError(e);
+                if (!e.Message.Contains(cantFindObjectError))
+                {
+                    return util.ReportError(e);
+                }
+                
+                return successMessage;
+
+            
             }
         }
 
