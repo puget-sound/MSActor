@@ -295,7 +295,8 @@ namespace MSActor.Controllers
         {
             try { 
                 ADController control = new ADController();
-                return control.NewADGroup(input.name, input.description, input.info, input.path, input.groupcategory, input.groupscope);
+                return control.NewADGroup(input.name, input.description, input.info, input.path, 
+                    input.groupcategory, input.groupscope, input.samaccountname);
             }
             catch (Exception e)
             {
