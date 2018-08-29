@@ -519,7 +519,7 @@
             <param name="homedrive"></param>
             <returns></returns>
         </member>
-        <member name="M:MSActor.Controllers.ADController.NewADGroup(System.String,System.String,System.String,System.String,System.String,System.String)">
+        <member name="M:MSActor.Controllers.ADController.NewADGroup(System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
             <summary>
             This method creates a new AD group
             </summary>

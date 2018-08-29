@@ -402,7 +402,8 @@ namespace MSActor.Controllers
         /// <param name="group_category"></param>
         /// <param name="group_scope"></param>
         /// <returns></returns>
-        public MSActorReturnMessageModel NewADGroup(string group_name, string group_description, string group_info, string group_ad_path, string group_category, string group_scope)
+        public MSActorReturnMessageModel NewADGroup(string group_name, string group_description, string group_info, 
+            string group_ad_path, string group_category, string group_scope, string samaccountname)
         {
             UtilityController util = new UtilityController();
             try
@@ -510,6 +511,7 @@ namespace MSActor.Controllers
                         };
                         command.AddParameter("OtherAttributes", attrHash);
                     }
+                    command.AddParameter("samaccountname", samaccountname);
                     powershell.Commands = command;
                     powershell.Invoke();
                     if (powershell.Streams.Error.Count > 0)
