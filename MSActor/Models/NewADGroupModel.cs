@@ -13,8 +13,10 @@ namespace MSActor.Models
         public string path;
         public string groupcategory;
         public string groupscope;
+        public string samaccountname;
 
-        public NewADGroupModel(string group_name, string group_description, string group_info, string group_ad_path, string group_category, string group_scope)
+        public NewADGroupModel(string group_name, string group_description, string group_info, string group_ad_path, 
+            string group_category, string group_scope, string samaccountname)
         {
             this.name = group_name;
             this.description = group_description;
@@ -22,6 +24,7 @@ namespace MSActor.Models
             this.path = group_ad_path;
             this.groupcategory = group_category;
             this.groupscope = group_scope;
+            this.samaccountname = samaccountname;
         }
     }
 }
