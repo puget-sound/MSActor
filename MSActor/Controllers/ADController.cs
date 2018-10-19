@@ -270,8 +270,7 @@ namespace MSActor.Controllers
                 {
                     return util.ReportError(e);
                 }
-                MSActorReturnMessageModel successMesage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMesage;
+                return util.ReportHiddenError(e);
 
             }
         }
@@ -531,8 +530,7 @@ namespace MSActor.Controllers
                 {
                     return util.ReportError(e);
                 }
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
+                return util.ReportHiddenError(e);
             }
         }
 
@@ -571,8 +569,7 @@ namespace MSActor.Controllers
                 {
                     return util.ReportError(e);
                 }
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
+                return util.ReportHiddenError(e);
 
             }
         }
@@ -662,8 +659,7 @@ namespace MSActor.Controllers
                 {
                     return util.ReportError(e);
                 }
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
+                return util.ReportHiddenError(e);
             }
         }
 
@@ -797,8 +793,8 @@ namespace MSActor.Controllers
                 {
                     return util.ReportError(e);
                 }
-                
-                return successMessage;
+
+                return util.ReportHiddenError(e);
 
             
             }

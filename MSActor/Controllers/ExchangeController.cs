@@ -296,8 +296,7 @@ namespace MSActor.Controllers
                         {
                             if (powershell.Streams.Error[0].Exception.Message.Contains("is already in the target database"))
                             {
-                                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                                return successMessage;
+                                return util.ReportHiddenError(powershell.Streams.Error[0].Exception);
                             }
                             else
                             {
