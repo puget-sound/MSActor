@@ -214,7 +214,7 @@ namespace MSActor.Controllers
                     bool adFinished = false;
                     int count = 0;
                     String objectNotFoundMessage = "Cannot find an object with identity";
-                    while (adFinished == false && count < 3)
+                    while (adFinished == false && count < 6)
                     {
                         try
                         {
@@ -255,7 +255,7 @@ namespace MSActor.Controllers
                         }
                     }
 
-                    if(count == 3)
+                    if(count == 6)
                     {
                         throw new Exception("Retry count exceeded. May indicate account creation issue");
                     }
