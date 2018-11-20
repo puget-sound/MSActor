@@ -82,5 +82,20 @@ namespace MSActor.Controllers
             Elmah.ErrorSignal.FromCurrentContext().Raise(e);
             return errorMessage;
         }
+
+        public MSActorReturnMessageModel ReportHiddenError(Exception e)
+        {
+            Debug.WriteLine("reporting a hidden error");
+            MSActorReturnMessageModel SuccessMessage = new MSActorReturnMessageModel("CMP", e.Message);
+            Elmah.ErrorSignal.FromCurrentContext().Raise(e);
+            return SuccessMessage;
+        }
+
+        public void LogMessage(String message)
+        {
+            Debug.WriteLine("Writing the message: " + message);
+            Exception e = new Exception(message);
+            Elmah.ErrorSignal.FromCurrentContext().Raise(e);
+        }
     }
 }

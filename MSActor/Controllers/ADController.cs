@@ -214,7 +214,7 @@ namespace MSActor.Controllers
                     bool adFinished = false;
                     int count = 0;
                     String objectNotFoundMessage = "Cannot find an object with identity";
-                    while (adFinished == false && count < 3)
+                    while (adFinished == false && count < 6)
                     {
                         try
                         {
@@ -255,7 +255,7 @@ namespace MSActor.Controllers
                         }
                     }
 
-                    if(count == 3)
+                    if(count == 6)
                     {
                         throw new Exception("Retry count exceeded. May indicate account creation issue");
                     }
@@ -270,8 +270,7 @@ namespace MSActor.Controllers
                 {
                     return util.ReportError(e);
                 }
-                MSActorReturnMessageModel successMesage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMesage;
+                return util.ReportHiddenError(e);
 
             }
         }
@@ -531,8 +530,7 @@ namespace MSActor.Controllers
                 {
                     return util.ReportError(e);
                 }
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
+                return util.ReportHiddenError(e);
             }
         }
 
@@ -571,8 +569,7 @@ namespace MSActor.Controllers
                 {
                     return util.ReportError(e);
                 }
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
+                return util.ReportHiddenError(e);
 
             }
         }
@@ -662,8 +659,7 @@ namespace MSActor.Controllers
                 {
                     return util.ReportError(e);
                 }
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
+                return util.ReportHiddenError(e);
             }
         }
 
@@ -797,8 +793,8 @@ namespace MSActor.Controllers
                 {
                     return util.ReportError(e);
                 }
-                
-                return successMessage;
+
+                return util.ReportHiddenError(e);
 
             
             }
