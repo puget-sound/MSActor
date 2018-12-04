@@ -617,6 +617,7 @@ namespace MSActor.Controllers
         public MSActorReturnMessageModel RemoveADGroupMember(string group_identity, string group_member)
         {
             string notAMemberMessage = "The specified account name is not a member of the group";
+            string objectNotFoundMessage = "Directory object not found";
             try
             {
                 using (PowerShell powershell = PowerShell.Create())
@@ -627,25 +628,11 @@ namespace MSActor.Controllers
                     command.AddParameter("member", group_member);
                     command.AddParameter("confirm", false);
                     powershell.Commands = command;
+                    powershell.Invoke();
 
-                   
-                    try
-                    {
-                        powershell.Invoke();
-                    }
-                    catch (Exception e)
-                    {
-                        if (!e.Message.Contains(notAMemberMessage))
-                        {
-                            throw e;
-                        }
-                    }
                     if (powershell.Streams.Error.Count > 0)
                     {
-                        if (!powershell.Streams.Error[0].Exception.Message.Contains(notAMemberMessage))
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
+                        throw powershell.Streams.Error[0].Exception;
                     }
                     powershell.Streams.ClearStreams();
 
@@ -655,7 +642,7 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                if(!e.Message.Contains(notAMemberMessage) && !e.Message.Contains(cantFindObjectError))
+                if(!e.Message.Contains(notAMemberMessage) && !e.Message.Contains(objectNotFoundMessage))
                 {
                     return util.ReportError(e);
                 }
