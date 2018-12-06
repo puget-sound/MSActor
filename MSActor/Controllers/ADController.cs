@@ -214,7 +214,7 @@ namespace MSActor.Controllers
                     bool adFinished = false;
                     int count = 0;
                     String objectNotFoundMessage = "Cannot find an object with identity";
-                    while (adFinished == false && count < 3)
+                    while (adFinished == false && count < 6)
                     {
                         try
                         {
@@ -255,7 +255,7 @@ namespace MSActor.Controllers
                         }
                     }
 
-                    if(count == 3)
+                    if(count == 6)
                     {
                         throw new Exception("Retry count exceeded. May indicate account creation issue");
                     }
@@ -270,8 +270,7 @@ namespace MSActor.Controllers
                 {
                     return util.ReportError(e);
                 }
-                MSActorReturnMessageModel successMesage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMesage;
+                return util.ReportHiddenError(e);
 
             }
         }
@@ -531,8 +530,7 @@ namespace MSActor.Controllers
                 {
                     return util.ReportError(e);
                 }
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
+                return util.ReportHiddenError(e);
             }
         }
 
@@ -571,8 +569,7 @@ namespace MSActor.Controllers
                 {
                     return util.ReportError(e);
                 }
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
+                return util.ReportHiddenError(e);
 
             }
         }
@@ -620,6 +617,7 @@ namespace MSActor.Controllers
         public MSActorReturnMessageModel RemoveADGroupMember(string group_identity, string group_member)
         {
             string notAMemberMessage = "The specified account name is not a member of the group";
+            string objectNotFoundMessage = "Directory object not found";
             try
             {
                 using (PowerShell powershell = PowerShell.Create())
@@ -630,25 +628,11 @@ namespace MSActor.Controllers
                     command.AddParameter("member", group_member);
                     command.AddParameter("confirm", false);
                     powershell.Commands = command;
+                    powershell.Invoke();
 
-                   
-                    try
-                    {
-                        powershell.Invoke();
-                    }
-                    catch (Exception e)
-                    {
-                        if (!e.Message.Contains(notAMemberMessage))
-                        {
-                            throw e;
-                        }
-                    }
                     if (powershell.Streams.Error.Count > 0)
                     {
-                        if (!powershell.Streams.Error[0].Exception.Message.Contains(notAMemberMessage))
-                        {
-                            throw powershell.Streams.Error[0].Exception;
-                        }
+                        throw powershell.Streams.Error[0].Exception;
                     }
                     powershell.Streams.ClearStreams();
 
@@ -658,12 +642,11 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                if(!e.Message.Contains(notAMemberMessage) && !e.Message.Contains(cantFindObjectError))
+                if(!e.Message.Contains(notAMemberMessage) && !e.Message.Contains(objectNotFoundMessage))
                 {
                     return util.ReportError(e);
                 }
-                MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                return successMessage;
+                return util.ReportHiddenError(e);
             }
         }
 
@@ -797,8 +780,8 @@ namespace MSActor.Controllers
                 {
                     return util.ReportError(e);
                 }
-                
-                return successMessage;
+
+                return util.ReportHiddenError(e);
 
             
             }

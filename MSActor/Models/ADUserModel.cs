@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MSActor.Controllers;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -37,14 +38,22 @@ namespace MSActor.Models
         public bool enabled = false;
         public string accountPassword;
 
-
+        
         public ADUserModel(string city, string name, string department, string description, 
             string displayname, string employeeid, string givenname, string officephone, string initials, 
             string office, string postalcode, string samaccountname, string state, string streetaddress, 
             string surname, string title, string userprincipalname, string path, string ipphone, 
             string msExchHideFromAddressList, string changepasswordatlogon, string enabled, string type, string accountPassword)
-        {           
-            if(name != "")
+        {
+            string LogMessage = "NewADUser|name: " + name + "|city: " + city + "|department: " + department + "|description: " + description + "|" +
+            "displayname: " + displayname + "|employeeid: " + employeeid + "|givenname: " + givenname + "|officephone: " + officephone +
+            "|initials: " + initials + "|office: " + office + "|postalcode: " + postalcode + "|samaccountname: " + samaccountname + "|state: " + state
+            + "|streetaddress: " + streetaddress + "|surname: " + surname + "|title: " + title + "|type: " + type + "|userprincipalname: " +
+            userprincipalname + "|path: " + path + "|ipphone: " + ipphone + "|msExchHideFromAddressList: " + msExchHideFromAddressList +
+            "|changepasswordatlogon: " + changepasswordatlogon + "|enabled: " + enabled;
+            UtilityController util = new UtilityController();
+            util.LogMessage(LogMessage);
+            if (name != "")
                 this.name = name;      
             if (city != "")
                 this.city = city;
@@ -115,6 +124,8 @@ namespace MSActor.Models
                 this.accountPassword = accountPassword;
             if (type != "")
                 this.type = type;
+
+            
         }
 
 
