@@ -23,6 +23,7 @@ namespace MSActor.Controllers
     {
         public const string SuccessCode = "CMP";
         public const string ErrorCode = "ERR";
+        public const long BytesInGigabyte = 1_073_741_824;
 
         UtilityController util;
         public FileServerController()
@@ -549,6 +550,14 @@ namespace MSActor.Controllers
             }
         }
 
+        private long NumericLimit(string limit)
+        {
+            int suffixIndex = limit.IndexOf("gb", StringComparison.InvariantCultureIgnoreCase);
+            if (suffixIndex == -1)
+                throw new Exception("Cannot process limit value - gigabytes only");
+            return long.Parse(limit.Substring(0, limit.Length - suffixIndex - 1).Trim()) * BytesInGigabyte;
+        }
+
         public MSActorReturnMessageModel AddDirQuota(string computername, string path, string limit)
         {
             MSActorReturnMessageModel successMessage;
@@ -568,7 +577,7 @@ namespace MSActor.Controllers
                         PSCommand command = new PSCommand();
                         command.AddCommand("New-FsrmQuota");
                         command.AddParameter("Path", path);
-                        command.AddParameter("Size", limit);
+                        command.AddParameter("Size", NumericLimit(limit));
                         powershell.Commands = command;
                         Collection<PSObject> result = powershell.Invoke();
                         if (powershell.Streams.Error.Count > 0)
@@ -610,7 +619,7 @@ namespace MSActor.Controllers
                         PSCommand command = new PSCommand();
                         command.AddCommand("Set-FsrmQuota");
                         command.AddParameter("Path", path);
-                        command.AddParameter("Size", limit);
+                        command.AddParameter("Size", NumericLimit(limit));
                         powershell.Commands = command;
                         Collection<PSObject> result = powershell.Invoke();
                         if (powershell.Streams.Error.Count > 0)
