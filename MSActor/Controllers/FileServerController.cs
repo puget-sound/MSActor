@@ -1,4 +1,5 @@
-﻿using MSActor.Models;
+﻿using Microsoft.Management.Infrastructure;
+using MSActor.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -550,12 +551,12 @@ namespace MSActor.Controllers
             }
         }
 
-        private long NumericLimit(string limit)
+        private ulong NumericLimit(string limit)
         {
             int suffixIndex = limit.IndexOf("gb", StringComparison.InvariantCultureIgnoreCase);
             if (suffixIndex == -1)
                 throw new Exception("Cannot process limit value - gigabytes only");
-            return long.Parse(limit.Substring(0, limit.Length - suffixIndex - 1).Trim()) * BytesInGigabyte;
+            return ulong.Parse(limit.Substring(0, limit.Length - suffixIndex - 1).Trim()) * BytesInGigabyte;
         }
 
         public MSActorReturnMessageModel AddDirQuota(string computername, string path, string limit)
@@ -582,9 +583,29 @@ namespace MSActor.Controllers
                         Collection<PSObject> result = powershell.Invoke();
                         if (powershell.Streams.Error.Count > 0)
                         {
-                            if (powershell.Streams.Error[0].Exception.Message != "The specified object already exists.")
+                            if (powershell.Streams.Error[0].Exception.Message.Trim() != "0x80045303, The specified object already exists.")
                             {
                                 throw powershell.Streams.Error[0].Exception;
+                            }
+                            else
+                            {
+                                powershell.Streams.ClearStreams();
+
+                                // Check that the existing quota has the same limit
+                                command = new PSCommand();
+                                command.AddCommand("Get-FsrmQuota");
+                                command.AddParameter("Path", path);
+                                powershell.Commands = command;
+                                Collection<PSObject> res = powershell.Invoke();
+                                if (powershell.Streams.Error.Count > 0)
+                                {
+                                    throw powershell.Streams.Error[0].Exception;
+                                }
+                                CimInstance quota = (CimInstance)res.FirstOrDefault()?.BaseObject;
+                                if ((ulong)quota.CimInstanceProperties["Size"].Value != NumericLimit(limit))
+                                {
+                                    throw new Exception("A different quota already exists on that folder");
+                                }
                             }
                         }
                         powershell.Streams.ClearStreams();
