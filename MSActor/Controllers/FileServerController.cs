@@ -582,10 +582,10 @@ namespace MSActor.Controllers
                         Collection<PSObject> result = powershell.Invoke();
                         if (powershell.Streams.Error.Count > 0)
                         {
-//                            if (powershell.Streams.Error[0].Exception.Message != '(already exists message')
-//                            {
+                            if (powershell.Streams.Error[0].Exception.Message != "The specified object already exists.")
+                            {
                                 throw powershell.Streams.Error[0].Exception;
-//                            }
+                            }
                         }
                         powershell.Streams.ClearStreams();
 
