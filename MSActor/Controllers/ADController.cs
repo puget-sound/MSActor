@@ -151,6 +151,8 @@ namespace MSActor.Controllers
         /// <returns></returns>
         public MSActorReturnMessageModel NewADUserDriver(ADUserModel user)
         {
+            // Project P0975: Update retry delays from 1 second to 3 seconds, attempting to
+            // reduce error reports from delays in creating user accounts
             try
             {
                 using (PowerShell powershell = PowerShell.Create())

@@ -561,6 +561,8 @@ namespace MSActor.Controllers
 
         public MSActorReturnMessageModel AddDirQuota(string computername, string path, string limit)
         {
+            // Project P0975: Replace old command line scripts with new PowerShell commands,
+            // required after upgrading the Windows Server version on the file servers
             MSActorReturnMessageModel successMessage;
             try
             {
@@ -624,6 +626,8 @@ namespace MSActor.Controllers
 
         public MSActorReturnMessageModel ModifyDirQuota(string computername, string path, string limit)
         {
+            // Project P0975: Replace old command line scripts with new PowerShell commands,
+            // required after upgrading the Windows Server version on the file servers
             try
             {
                 PSSessionOption option = new PSSessionOption();
