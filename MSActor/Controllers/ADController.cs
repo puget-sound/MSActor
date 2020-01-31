@@ -227,7 +227,7 @@ namespace MSActor.Controllers
                             {
                                 if (powershell.Streams.Error[0].Exception.Message.Contains(objectNotFoundMessage))
                                 {
-                                    System.Threading.Thread.Sleep(1000);
+                                    System.Threading.Thread.Sleep(3000);
                                 }
                                 else
                                 {
@@ -245,7 +245,7 @@ namespace MSActor.Controllers
                         {
                             if (e.Message.Contains(objectNotFoundMessage))
                             {
-                                System.Threading.Thread.Sleep(1000);
+                                System.Threading.Thread.Sleep(3000);
                                 count++;
                             }
                             else
