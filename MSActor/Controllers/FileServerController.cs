@@ -556,7 +556,7 @@ namespace MSActor.Controllers
             int suffixIndex = limit.IndexOf("gb", StringComparison.InvariantCultureIgnoreCase);
             if (suffixIndex == -1)
                 throw new Exception("Cannot process limit value - gigabytes only");
-            return ulong.Parse(limit.Substring(0, limit.Length - suffixIndex - 1).Trim()) * BytesInGigabyte;
+            return ulong.Parse(limit.Substring(0, suffixIndex).Trim()) * BytesInGigabyte;
         }
 
         public MSActorReturnMessageModel AddDirQuota(string computername, string path, string limit)
