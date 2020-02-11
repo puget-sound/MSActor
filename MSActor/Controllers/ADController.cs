@@ -151,6 +151,8 @@ namespace MSActor.Controllers
         /// <returns></returns>
         public MSActorReturnMessageModel NewADUserDriver(ADUserModel user)
         {
+            // Project P0975: Update retry delays from 1 second to 3 seconds, attempting to
+            // reduce error reports from delays in creating user accounts
             try
             {
                 using (PowerShell powershell = PowerShell.Create())
@@ -227,7 +229,7 @@ namespace MSActor.Controllers
                             {
                                 if (powershell.Streams.Error[0].Exception.Message.Contains(objectNotFoundMessage))
                                 {
-                                    System.Threading.Thread.Sleep(1000);
+                                    System.Threading.Thread.Sleep(3000);
                                 }
                                 else
                                 {
@@ -245,7 +247,7 @@ namespace MSActor.Controllers
                         {
                             if (e.Message.Contains(objectNotFoundMessage))
                             {
-                                System.Threading.Thread.Sleep(1000);
+                                System.Threading.Thread.Sleep(3000);
                                 count++;
                             }
                             else

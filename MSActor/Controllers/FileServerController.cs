@@ -1,4 +1,5 @@
-﻿using MSActor.Models;
+﻿using Microsoft.Management.Infrastructure;
+using MSActor.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -23,6 +24,7 @@ namespace MSActor.Controllers
     {
         public const string SuccessCode = "CMP";
         public const string ErrorCode = "ERR";
+        public const long BytesInGigabyte = 1_073_741_824;
 
         UtilityController util;
         public FileServerController()
@@ -549,9 +551,19 @@ namespace MSActor.Controllers
             }
         }
 
+        private ulong NumericLimit(string limit)
+        {
+            int suffixIndex = limit.IndexOf("gb", StringComparison.InvariantCultureIgnoreCase);
+            if (suffixIndex == -1)
+                throw new Exception("Cannot process limit value - gigabytes only");
+            return ulong.Parse(limit.Substring(0, suffixIndex).Trim()) * BytesInGigabyte;
+        }
+
         public MSActorReturnMessageModel AddDirQuota(string computername, string path, string limit)
         {
-            MSActorReturnMessageModel errorMessage, successMessage;
+            // Project P0975: Replace old command line scripts with new PowerShell commands,
+            // required after upgrading the Windows Server version on the file servers
+            MSActorReturnMessageModel successMessage;
             try
             {
                 PSSessionOption option = new PSSessionOption();
@@ -566,143 +578,42 @@ namespace MSActor.Controllers
                         runspace.Open();
 
                         PSCommand command = new PSCommand();
-                        string script = String.Format("dirquota quota add /path:\"{0}\" /limit:{1}", path, limit);
-                        command.AddScript(script);
+                        command.AddCommand("New-FsrmQuota");
+                        command.AddParameter("Path", path);
+                        command.AddParameter("Size", NumericLimit(limit));
                         powershell.Commands = command;
-                        Collection<PSObject> ret = powershell.Invoke();
+                        Collection<PSObject> result = powershell.Invoke();
                         if (powershell.Streams.Error.Count > 0)
                         {
-                            if (powershell.Streams.Error[0].FullyQualifiedErrorId == "NativeCommandError")
+                            if (powershell.Streams.Error[0].Exception.Message.Trim() != "0x80045303, The specified object already exists.")
                             {
-                                StringBuilder msgBuilder = new StringBuilder();
-                                foreach (ErrorRecord errorRec in powershell.Streams.Error)
-                                {
-                                    // Kludge to fix a weird bug with blank lines in the error output
-                                    if (errorRec.CategoryInfo.ToString() == errorRec.Exception.Message)
-                                    {
-                                        msgBuilder.AppendLine();
-                                    }
-                                    else
-                                    {
-                                        msgBuilder.AppendLine(errorRec.Exception.Message);
-                                    }
-                                }
-                                throw new Exception(msgBuilder.ToString());
+                                throw powershell.Streams.Error[0].Exception;
                             }
                             else
                             {
-                                throw powershell.Streams.Error[0].Exception;
+                                powershell.Streams.ClearStreams();
+
+                                // Check that the existing quota has the same limit
+                                command = new PSCommand();
+                                command.AddCommand("Get-FsrmQuota");
+                                command.AddParameter("Path", path);
+                                powershell.Commands = command;
+                                Collection<PSObject> res = powershell.Invoke();
+                                if (powershell.Streams.Error.Count > 0)
+                                {
+                                    throw powershell.Streams.Error[0].Exception;
+                                }
+                                CimInstance quota = (CimInstance)res.FirstOrDefault()?.BaseObject;
+                                if ((ulong)quota.CimInstanceProperties["Size"].Value != NumericLimit(limit))
+                                {
+                                    throw new Exception("A different quota already exists on that folder");
+                                }
                             }
                         }
                         powershell.Streams.ClearStreams();
 
-                        // The return message may or may not be an error, how annoying!
-                        // dirquota is not consistent with how many blank lines it returns before a message, so
-                        // we search for the first returned line that is not blank.
-                        string message = ret.First(x => (x.BaseObject as string).Length > 0).BaseObject as string;
-                        if (message == String.Format("Quota successfully created for \"{0}\".", path))
-                        {
-                            successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                            return successMessage;
-                        }
-                        else if (message == String.Format("Quota already exists for \"{0}\".", path))
-                        {
-                            // Check if the limit is the same
-                            using (PowerShell powershell1 = PowerShell.Create())
-                            {
-                                powershell1.Runspace = runspace;
-
-                                PSCommand command1 = new PSCommand();
-                                string script1 = String.Format("dirquota quota list /path:\"{0}\"", path);
-                                command1.AddScript(script1);
-                                powershell1.Commands = command1;
-                                Collection<PSObject> ret1 = powershell1.Invoke();
-                                if (powershell1.Streams.Error.Count > 0)
-                                {
-                                    if (powershell1.Streams.Error[0].FullyQualifiedErrorId == "NativeCommandError")
-                                    {
-                                        StringBuilder msgBuilder1 = new StringBuilder();
-                                        foreach (ErrorRecord errorRec1 in powershell1.Streams.Error)
-                                        {
-                                            // Kludge to fix a weird bug with blank lines in the error output
-                                            if (errorRec1.CategoryInfo.ToString() == errorRec1.Exception.Message)
-                                            {
-                                                msgBuilder1.AppendLine();
-                                            }
-                                            else
-                                            {
-                                                msgBuilder1.AppendLine(errorRec1.Exception.Message);
-                                            }
-                                        }
-                                        throw new Exception(msgBuilder1.ToString());
-                                    }
-                                    else
-                                    {
-                                        throw powershell1.Streams.Error[0].Exception;
-                                    }
-                                }
-                                powershell1.Streams.ClearStreams();
-                                // Here we search through a bunch of lines returned to get to the one showing the quota limit.
-                                string existingLimitLine = ret1.First(x => (x.BaseObject as String).StartsWith("Limit:")).BaseObject as string;
-                                if (existingLimitLine == null)
-                                {
-                                    // There was not a line in the output containing the quota, so we assume we got an error message instead.
-                                    string message1 = ret1.First(x => (x.BaseObject as string).Length > 0).BaseObject as string;
-                                    throw new Exception(message1);
-                                }
-                                else
-                                {
-                                    // Parse out the returned quota and see if it is the same.
-                                    // The output looks like "Limit:                  10.00 GB (Hard)".
-                                    // The regular expression below separates this into groups:
-                                    // <-1-->                  <--2--->
-                                    // Limit:                  10.00 GB (Hard)
-                                    // Meaning of the next regex (from left to right):
-                                    // 1. Save all the characters that are not blanks into a group. (\S+)
-                                    // 2. Skip over all characters that are blanks. \s+
-                                    // 3. Save all characters that are not matched below into a group. (.+)
-                                    // 4. Skip a blank character followed by anything in parentheses. \s\(.+\)
-                                    // 5. Anchor #4 to the end of the line at its right. $
-                                    // The @ before the string tells C# not to escape any characters before passing it
-                                    // to the regular expression processor.
-                                    GroupCollection groups = Regex.Match(existingLimitLine, @"(\S+)\s+(.+)\s\(.+\)$").Groups;
-                                    // The second group (#3 above) is the quota, expressed as e.g. "10.00 GB"
-                                    string existingLimit = groups[2].Value;
-                                    // Break out numeric and unit parts and compare them
-                                    // Meaning of the next regex (from left to right):
-                                    // 1. Save all characters that are decimal points or numerals into a group. ([.\d]+)
-                                    // 2. Skip over all characters that are blank (there may be none). \s*
-                                    // 3. Save all characters that are not numerals into a group. (\D+)
-                                    // The @ before the string tells C# not to escape any characters before passing it
-                                    // to the regular expression processor.
-                                    GroupCollection limitGroups = Regex.Match(limit, @"([.\d]+)\s*(\D+)").Groups;
-                                    double limitNumber = double.Parse(limitGroups[1].Value);
-                                    string limitUnits = limitGroups[2].Value.ToUpper();
-                                    // Meaning of the next regex (from left to right):
-                                    // 1. Save all characters that are decimal points or numerals into a group. ([.\d]+)
-                                    // 2. Skip over all characters that are blank (there may be none). \s*
-                                    // 3. Save all characters that are not numerals into a group. (\D+)
-                                    // The @ before the string tells C# not to escape any characters before passing it
-                                    // to the regular expression processor.
-                                    GroupCollection existingLimitGroups = Regex.Match(existingLimit, @"([.\d]+)\s*(\D+)").Groups;
-                                    double existingLimitNumber = double.Parse(existingLimitGroups[1].Value);
-                                    string existingLimitUnits = existingLimitGroups[2].Value.ToUpper();
-                                    if ((limitNumber != existingLimitNumber) || (limitUnits != existingLimitUnits))
-                                    {
-                                        throw new Exception(String.Format("Path '{0}' has limit '{1}', different than specified.", path, existingLimit));
-                                    }
-                                    else
-                                    {
-                                        successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                                        return successMessage;
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            throw new Exception(message);
-                        }
+                        successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                        return successMessage;
                     }
                 }
             }
@@ -715,8 +626,8 @@ namespace MSActor.Controllers
 
         public MSActorReturnMessageModel ModifyDirQuota(string computername, string path, string limit)
         {
-            MSActorReturnMessageModel errorMessage;
-
+            // Project P0975: Replace old command line scripts with new PowerShell commands,
+            // required after upgrading the Windows Server version on the file servers
             try
             {
                 PSSessionOption option = new PSSessionOption();
@@ -731,49 +642,19 @@ namespace MSActor.Controllers
                         runspace.Open();
 
                         PSCommand command = new PSCommand();
-                        string script = String.Format("dirquota quota modify /path:\"{0}\" /limit:{1}", path, limit);
-                        command.AddScript(script);
+                        command.AddCommand("Set-FsrmQuota");
+                        command.AddParameter("Path", path);
+                        command.AddParameter("Size", NumericLimit(limit));
                         powershell.Commands = command;
-                        Collection<PSObject> ret = powershell.Invoke();
+                        Collection<PSObject> result = powershell.Invoke();
                         if (powershell.Streams.Error.Count > 0)
                         {
-                            if (powershell.Streams.Error[0].FullyQualifiedErrorId == "NativeCommandError")
-                            {
-                                StringBuilder msgBuilder = new StringBuilder();
-                                foreach (ErrorRecord errorRec in powershell.Streams.Error)
-                                {
-                                    // Kludge to fix a weird bug with blank lines in the error output
-                                    if (errorRec.CategoryInfo.ToString() == errorRec.Exception.Message)
-                                    {
-                                        msgBuilder.AppendLine();
-                                    }
-                                    else
-                                    {
-                                        msgBuilder.AppendLine(errorRec.Exception.Message);
-                                    }
-                                }
-                                throw new Exception(msgBuilder.ToString());
-                            }
-                            else
-                            {
-                                throw powershell.Streams.Error[0].Exception;
-                            }
+                            throw powershell.Streams.Error[0].Exception;
                         }
                         powershell.Streams.ClearStreams();
 
-                        // The return message may or may not be an error, how annoying!
-                        // dirquota is not consistent with how many blank lines it returns before a message, so
-                        // we search for the first returned line that is not blank.
-                        string message = ret.First(x => (x.BaseObject as string).Length > 0).BaseObject as string;
-                        if (message == "Quotas modified successfully.")
-                        {
-                            MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                            return successMessage;
-                        }
-                        else
-                        {
-                            throw new Exception(message);
-                        }
+                        MSActorReturnMessageModel successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                        return successMessage;
                     }
                 }
             }
