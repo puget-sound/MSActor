@@ -286,6 +286,7 @@
     <Content Include="Elmah.Athz.config" />
     <None Include="Properties\PublishProfiles\CustomProfile.pubxml" />
     <None Include="Properties\PublishProfiles\CustomProfile1.pubxml" />
+    <None Include="Properties\PublishProfiles\PRD Deployment Profile.pubxml" />
     <None Include="Properties\PublishProfiles\TST Deploy Profile.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
