@@ -413,7 +413,7 @@ namespace MSActor.Controllers
                 {
                     PSCommand command;
 
-                    if (group_category == "distribution")
+                    /* if (group_category == "distribution")
                     {
                         // First we need Exchange to enable the distribution group
                         ExchangeController control = new ExchangeController();
@@ -491,7 +491,7 @@ namespace MSActor.Controllers
                         {
                             return msg;
                         }
-                    }
+                    } */
 
                     command = new PSCommand();
                     command.AddCommand("New-ADGroup");
