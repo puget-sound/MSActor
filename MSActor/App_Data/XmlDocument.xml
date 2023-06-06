@@ -628,13 +628,6 @@
             </param>
             <returns></returns>
         </member>
-        <member name="M:MSActor.Controllers.MSActorController.EnableMailbox(MSActor.Models.EnableMailboxModel)">
-            <summary>
-            Activates an exchange mailbox for a user based on 
-            </summary>
-            <param name="input"></param>
-            <returns></returns>
-        </member>
         <member name="M:MSActor.Controllers.MSActorController.NewDirectory(MSActor.Models.DirectoryModel)">
             <summary>
             Creates a Folder on the file server at the given file path
@@ -757,48 +750,6 @@
         <member name="M:MSActor.Controllers.MSActorController.SetIPPhone(MSActor.Models.SetIPPhoneModel)">
             <summary>
             ...
-            </summary>
-            <param name="input"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MSActor.Controllers.MSActorController.SetMailboxQuotas(MSActor.Models.SetMailboxQuotasModel)">
-            <summary>
-            Sets quotas on mailboxes
-            </summary>
-            <param name="input"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MSActor.Controllers.MSActorController.SetMailboxName(MSActor.Models.SetMailboxNameModel)">
-            <summary>
-            Changes alias on mailbox
-            </summary>
-            <param name="input"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MSActor.Controllers.MSActorController.NewMoveRequest(MSActor.Models.NewMoveRequestModel)">
-            <summary>
-            Makes a new request to move mailbox from one database to another
-            </summary>
-            <param name="input"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MSActor.Controllers.MSActorController.GetMoveRequest(MSActor.Models.IdentityModel)">
-            <summary>
-            Checks on status of mailbox move request
-            </summary>
-            <param name="input"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MSActor.Controllers.MSActorController.DisableMailbox(MSActor.Models.IdentityModel)">
-            <summary>
-            Removes a mailbox
-            </summary>
-            <param name="input"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MSActor.Controllers.MSActorController.HideMailboxFromAddressLists(MSActor.Models.HideMailboxFromAddressListsModel)">
-            <summary>
-            Sets flag on a mailbox to hide it from address lists
             </summary>
             <param name="input"></param>
             <returns></returns>

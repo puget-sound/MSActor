@@ -71,7 +71,7 @@ namespace MSActor.Controllers
                 using (PowerShell ps = PowerShell.Create())
                 {
                     ps.AddCommand("get-aduser");
-                    ps.AddParameter("Filter", "Name -eq " + emplid);
+                    ps.AddParameter("Filter", "EmployeeID -eq " + emplid);
                     ps.AddParameter("Properties", "*");
                     Collection<PSObject> names = ps.Invoke();
                     PSObject ob = names.FirstOrDefault();
@@ -590,8 +590,9 @@ namespace MSActor.Controllers
                 {
                     PSCommand command = new PSCommand();
                     command.AddCommand("Add-ADGroupMember");
-                    command.AddParameter("identity", group_identity);
-                    command.AddParameter("member", group_member);
+                    command.AddParameter("Identity", group_identity);
+                    List<string> members = new List<string> { group_member };
+                    command.AddParameter("Members", members);
                     powershell.Commands = command;
                     powershell.Invoke();
                     if (powershell.Streams.Error.Count > 0)
@@ -626,9 +627,10 @@ namespace MSActor.Controllers
                 {
                     PSCommand command = new PSCommand();
                     command.AddCommand("Remove-ADGroupMember");
-                    command.AddParameter("identity", group_identity);
-                    command.AddParameter("member", group_member);
-                    command.AddParameter("confirm", false);
+                    command.AddParameter("Identity", group_identity);
+                    List<string> members = new List<string> { group_member };
+                    command.AddParameter("Members", members);
+                    command.AddParameter("Confirm", false);
                     powershell.Commands = command;
                     powershell.Invoke();
 
@@ -759,12 +761,15 @@ namespace MSActor.Controllers
                 using (PowerShell powershell = PowerShell.Create())
                 {
                     PSCommand command = new PSCommand();
-                    command.AddCommand("Get-ADUser");
+                    //command.AddCommand("Get-ADUser");
+                    //command.AddParameter("Identity", dName);
+                    //command.AddCommand("Get-ADObject");
+                    //command.AddCommand("Remove-ADObject");
+                    //command.AddParameter("confirm", false);
+                    //command.AddParameter("recursive");
+                    command.AddCommand("Remove-ADUser");
                     command.AddParameter("Identity", dName);
-                    command.AddCommand("Get-ADObject");
-                    command.AddCommand("Remove-ADObject");
-                    command.AddParameter("confirm", false);
-                    command.AddParameter("recursive");
+                    command.AddParameter("Confirm", false);
                     powershell.Commands = command;
                     powershell.Invoke();
                     if (powershell.Streams.Error.Count > 0)
