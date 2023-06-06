@@ -51,7 +51,7 @@ namespace MSActor.Controllers
 
                         PSCommand command = new PSCommand();
                         command.AddCommand("New-Item");
-                        command.AddParameter("ItemType", "directory");
+                        command.AddParameter("ItemType", "Directory");
                         command.AddParameter("Path", path);
                         powershell.Commands = command;
                         Collection<PSObject> returns = powershell.Invoke();
@@ -224,88 +224,46 @@ namespace MSActor.Controllers
                         runspace.Open();
 
                         PSCommand command = new PSCommand();
-                        string script = String.Format("net share {0}={1} \"/GRANT:Everyone,Full\"", name, path);
-                        command.AddScript(script);
+                        command.AddCommand("New-SmbShare");
+                        command.AddParameter("Name", name);
+                        command.AddParameter("Path", path);
+                        command.AddParameter("FullAccess", "Everyone");
                         powershell.Commands = command;
                         powershell.Invoke();
                         if (powershell.Streams.Error.Count > 0)
                         {
-                            if (powershell.Streams.Error[0].FullyQualifiedErrorId == "NativeCommandError")
+                            if (powershell.Streams.Error[0].FullyQualifiedErrorId == "Windows System Error 2118,New-SmbShare"
+                                && powershell.Streams.Error[0].Exception.Message == "The name has already been shared.")
                             {
-                                // If the share already exists it might be okay (see "else" below). Otherwise this is an error.
-                                if (powershell.Streams.Error[0].Exception.Message != "The name has already been shared.")
+                                powershell.Streams.ClearStreams();
+
+                                // Check that the existing share has the same path
+                                command.AddCommand("Get-SmbShare");
+                                command.AddParameter("Name", name);
+                                powershell.Commands = command;
+                                Collection<PSObject> ret = powershell.Invoke();
+                                if (powershell.Streams.Error.Count > 0)
                                 {
-                                    StringBuilder msgBuilder = new StringBuilder();
-                                    foreach (ErrorRecord errorRec in powershell.Streams.Error)
-                                    {
-                                        // Kludge to fix a weird bug with blank lines in the error output
-                                        if (errorRec.CategoryInfo.ToString() == errorRec.Exception.Message)
-                                        {
-                                            msgBuilder.AppendLine();
-                                        }
-                                        else
-                                        {
-                                            msgBuilder.AppendLine(errorRec.Exception.Message);
-                                        }
-                                    }
-                                    throw new Exception(msgBuilder.ToString());
+                                    throw powershell.Streams.Error[0].Exception;
+                                }
+                                powershell.Streams.ClearStreams();
+                                string existingPath = ret.First().Properties["Path"].Value as string;
+                                if (String.Equals(path, existingPath, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                                    return successMessage;
                                 }
                                 else
                                 {
-                                    powershell.Streams.ClearStreams();
-
-                                    // Check that the existing share has the same path
-                                    command = new PSCommand();
-                                    script = String.Format("net share {0}", name);
-                                    command.AddScript(script);
-                                    powershell.Commands = command;
-                                    Collection<PSObject> ret = powershell.Invoke();
-                                    if (powershell.Streams.Error.Count > 0)
-                                    {
-                                        throw powershell.Streams.Error[0].Exception;
-                                    }
-                                    powershell.Streams.ClearStreams();
-
-                                    // Find the first (hopefully only) line in the output with "Path" at the beginning
-                                    string pathResultLine = ret.First(x => (x.BaseObject as string).StartsWith("Path")).BaseObject as string;
-                                    if (pathResultLine == null)
-                                    {
-                                        // There was not a line in the output containing the path, so we assume we got an error message instead.
-                                        string message = ret.First(x => (x.BaseObject as string).Length > 0).BaseObject as string;
-                                        throw new Exception(message);
-                                    }
-                                    else
-                                    {
-                                        // The output looks like "Path              D:\Users\srenker".
-                                        // The regular expression below separates this into groups.
-                                        // Meaning of the next regex (from left to right):
-                                        // 1. Save all the characters that are not blanks into a group. (\S+)
-                                        // 2. Skip over all characters that are blanks. \s+
-                                        // 3. Save all the other characters into a group, up to end of line. (.+)$
-                                        // It's done this way because the path may have a space embedded in the name.
-                                        // The @ before the string tells C# not to escape any characters before passing it
-                                        // to the regular expression processor.
-                                        GroupCollection groups = Regex.Match(pathResultLine, @"(\S+)\s+(.+)$").Groups;
-                                        // Group 2 (#3 above) is the path value.
-                                        string pathResult = groups[2].Value;
-                                        if (pathResult == path)
-                                        {
-                                            successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                                            return successMessage;
-                                        }
-                                        else
-                                        {
-                                            throw new Exception(String.Format("Share '{0}' already exists for a different path '{1}'.", name, pathResult));
-                                        }
-                                    }
+                                    throw new Exception(String.Format("Share '{0}' already exists for a different path '{1}'.", name, existingPath));
                                 }
                             }
                             else
-                            {
-                                throw powershell.Streams.Error[0].Exception;
+                                {
+                                    throw powershell.Streams.Error[0].Exception;
+                                }
+                                // powershell.Streams.ClearStreams();  -- is unreachable here
                             }
-                            // powershell.Streams.ClearStreams();  -- is unreachable here
-                        }
 
                         successMessage = new MSActorReturnMessageModel(SuccessCode, "");
                         return successMessage;
@@ -322,6 +280,8 @@ namespace MSActor.Controllers
         {
             MSActorReturnMessageModel successMessage;
 
+            string notFoundMessage = "No MSFT_SMBShare objects found";
+
             try
             {
                 PSSessionOption option = new PSSessionOption();
@@ -337,37 +297,16 @@ namespace MSActor.Controllers
 
                         // First check that the share name is for the correct path
                         PSCommand command = new PSCommand();
-                        string script = String.Format("net share {0}", name);
-                        command.AddScript(script);
+                        command.AddCommand("Get-SmbShare");
+                        command.AddParameter("Name", name);
                         powershell.Commands = command;
                         Collection<PSObject> ret = powershell.Invoke();
                         if (powershell.Streams.Error.Count > 0)
                         {
-                            if (powershell.Streams.Error[0].FullyQualifiedErrorId == "NativeCommandError")
+                            if (powershell.Streams.Error[0].FullyQualifiedErrorId == "CmdletizationQuery_NotFound_Name,Get-SmbShare")
                             {
-                                // If the share does not exist return success
-                                if (powershell.Streams.Error[0].Exception.Message == "This shared resource does not exist.")
-                                {
-                                    successMessage = new MSActorReturnMessageModel(SuccessCode, "");
-                                    return successMessage;
-                                }
-                                else
-                                {
-                                    StringBuilder msgBuilder = new StringBuilder();
-                                    foreach (ErrorRecord errorRec in powershell.Streams.Error)
-                                    {
-                                        // Kludge to fix a weird bug with blank lines in the error output
-                                        if (errorRec.CategoryInfo.ToString() == errorRec.Exception.Message)
-                                        {
-                                            msgBuilder.AppendLine();
-                                        }
-                                        else
-                                        {
-                                            msgBuilder.AppendLine(errorRec.Exception.Message);
-                                        }
-                                    }
-                                    throw new Exception(msgBuilder.ToString());
-                                }
+                                successMessage = new MSActorReturnMessageModel(SuccessCode, "");
+                                return successMessage;
                             }
                             else
                             {
@@ -375,54 +314,21 @@ namespace MSActor.Controllers
                             }
                         }
                         powershell.Streams.ClearStreams();
-
-                        // Find the first (hopefully only) line in the output with "Path" at the beginning
-                        string pathResultLine = ret.First(x => (x.BaseObject as string).StartsWith("Path")).BaseObject as string;
-                        // The output looks like "Path              D:\Users\srenker".
-                        // The regular expression below separates this into groups.
-                        // Meaning of the next regex (from left to right):
-                        // 1. Save all the characters that are not blanks into a group. (\S+)
-                        // 2. Skip over all characters that are blanks. \s+
-                        // 3. Save all the other characters into a group, up to end of line. (.+)$
-                        // It's done this way because the path may have a space embedded in the name.
-                        // The @ before the string tells C# not to escape any characters before passing it
-                        // to the regular expression processor.
-                        GroupCollection groups = Regex.Match(pathResultLine, @"(\S+)\s+(.+)$").Groups;
-                        // Group 2 (#3 above) is the path value.
-                        string existingPath = groups[2].Value;
+                        string existingPath = ret.First().Properties["Path"].Value as string;
                         if (!String.Equals(path, existingPath, StringComparison.OrdinalIgnoreCase))
                         {
                             throw new Exception(String.Format("Share '{0}' is for path '{1}', different than specified.", name, existingPath));
                         }
 
                         // Now delete the share
-                        script = String.Format("net share {0} /delete", name);
-                        command.AddScript(script);
+                        command.AddCommand("Remove-SmbShare");
+                        command.AddParameter("Name", name);
+                        command.AddParameter("Confirm", false);
                         powershell.Commands = command;
                         powershell.Invoke();
                         if (powershell.Streams.Error.Count > 0)
                         {
-                            if (powershell.Streams.Error[0].FullyQualifiedErrorId == "NativeCommandError")
-                            {
-                                StringBuilder msgBuilder = new StringBuilder();
-                                foreach (ErrorRecord errorRec in powershell.Streams.Error)
-                                {
-                                    // Kludge to fix a weird bug with blank lines in the error output
-                                    if (errorRec.CategoryInfo.ToString() == errorRec.Exception.Message)
-                                    {
-                                        msgBuilder.AppendLine();
-                                    }
-                                    else
-                                    {
-                                        msgBuilder.AppendLine(errorRec.Exception.Message);
-                                    }
-                                }
-                                throw new Exception(msgBuilder.ToString());
-                            }
-                            else
-                            {
-                                throw powershell.Streams.Error[0].Exception;
-                            }
+                            throw powershell.Streams.Error[0].Exception;
                         }
                         powershell.Streams.ClearStreams();
 
@@ -433,7 +339,11 @@ namespace MSActor.Controllers
             }
             catch (Exception e)
             {
-                return util.ReportError(e);
+                if (!e.Message.Contains(notFoundMessage))
+                {
+                    return util.ReportError(e);
+                }
+                return util.ReportHiddenError(e);
             }
         }
 

@@ -71,7 +71,7 @@ namespace MSActor.Controllers
                 using (PowerShell ps = PowerShell.Create())
                 {
                     ps.AddCommand("get-aduser");
-                    ps.AddParameter("Filter", "Name -eq " + emplid);
+                    ps.AddParameter("Filter", "EmployeeID -eq " + emplid);
                     ps.AddParameter("Properties", "*");
                     Collection<PSObject> names = ps.Invoke();
                     PSObject ob = names.FirstOrDefault();
@@ -412,87 +412,6 @@ namespace MSActor.Controllers
                 using (PowerShell powershell = PowerShell.Create())
                 {
                     PSCommand command;
-
-                    /* if (group_category == "distribution")
-                    {
-                        // First we need Exchange to enable the distribution group
-                        ExchangeController control = new ExchangeController();
-                        MSActorReturnMessageModel msg = control.EnableDistributionGroup(group_name, group_ad_path, group_description, group_info);
-                        if (msg.code == "CMP")
-                        {
-                            // Then we follow up setting some attributes that Exchange's cmdlet won't set
-                            string distinguishedName = "CN=" + group_name + "," + group_ad_path;
-
-                            bool setADGroupComplete = false;
-                            int count = 0;
-                            string objectNotFoundMessage = "Directory object not found";
-                            while (setADGroupComplete == false && count < 3)
-                            {
-                                try
-                                {
-                                    command = new PSCommand();
-                                    command.AddCommand("Set-ADGroup");
-                                    command.AddParameter("identity", distinguishedName);
-                                    if (group_description != "")
-                                    {
-                                        command.AddParameter("description", group_description);
-                                    }
-                                    command.AddParameter("displayname", group_name);
-                                    if (group_info != "")
-                                    {
-                                        Hashtable attrHash = new Hashtable
-                                        {
-                                            {"info", group_info }
-                                        };
-                                        command.AddParameter("Add", attrHash);
-                                    }
-                                    powershell.Commands = command;
-                                    powershell.Invoke();
-                                    if (powershell.Streams.Error.Count > 0)
-                                    {
-                                        if (powershell.Streams.Error[0].Exception.Message.Contains(objectNotFoundMessage))
-                                        {
-                                            System.Threading.Thread.Sleep(1000);
-                                        }
-                                        else
-                                        {
-                                            throw powershell.Streams.Error[0].Exception;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        setADGroupComplete = true;
-                                    }
-                                    count++;
-                                }
-                                catch (Exception e)
-                                {
-                                    if (e.Message.Contains(objectNotFoundMessage))
-                                    {
-                                        System.Threading.Thread.Sleep(1000);
-                                        count++;
-                                    }
-                                    else
-                                    {
-                                        throw e;
-                                    }
-                                }
-                            }
-                            if (count == 3)
-                            {
-                                throw new Exception("Retry count exceeded. May indicate distribution group creation issue");
-                            }
-                            else
-                            {
-                                return new MSActorReturnMessageModel(SuccessCode, "");
-                            }
-                        }
-                        else
-                        {
-                            return msg;
-                        }
-                    } */
-
                     command = new PSCommand();
                     command.AddCommand("New-ADGroup");
                     command.AddParameter("name", group_name);
@@ -590,8 +509,9 @@ namespace MSActor.Controllers
                 {
                     PSCommand command = new PSCommand();
                     command.AddCommand("Add-ADGroupMember");
-                    command.AddParameter("identity", group_identity);
-                    command.AddParameter("member", group_member);
+                    command.AddParameter("Identity", group_identity);
+                    List<string> members = new List<string> { group_member };
+                    command.AddParameter("Members", members);
                     powershell.Commands = command;
                     powershell.Invoke();
                     if (powershell.Streams.Error.Count > 0)
@@ -626,9 +546,10 @@ namespace MSActor.Controllers
                 {
                     PSCommand command = new PSCommand();
                     command.AddCommand("Remove-ADGroupMember");
-                    command.AddParameter("identity", group_identity);
-                    command.AddParameter("member", group_member);
-                    command.AddParameter("confirm", false);
+                    command.AddParameter("Identity", group_identity);
+                    List<string> members = new List<string> { group_member };
+                    command.AddParameter("Members", members);
+                    command.AddParameter("Confirm", false);
                     powershell.Commands = command;
                     powershell.Invoke();
 
@@ -669,11 +590,6 @@ namespace MSActor.Controllers
                 PSSessionOption option = new PSSessionOption();
                 using (PowerShell powershell = PowerShell.Create())
                 {
-                    // Try without the runspace stuff first
-                    //Runspace runspace = RunspaceFactory.CreateRunspace();
-                    //powershell.Runspace = runspace;
-                    //runspace.Open();
-
                     PSObject user = util.getADUser(employeeid, samaccountname);
                     if (user == null)
                     {
@@ -759,12 +675,9 @@ namespace MSActor.Controllers
                 using (PowerShell powershell = PowerShell.Create())
                 {
                     PSCommand command = new PSCommand();
-                    command.AddCommand("Get-ADUser");
+                    command.AddCommand("Remove-ADUser");
                     command.AddParameter("Identity", dName);
-                    command.AddCommand("Get-ADObject");
-                    command.AddCommand("Remove-ADObject");
-                    command.AddParameter("confirm", false);
-                    command.AddParameter("recursive");
+                    command.AddParameter("Confirm", false);
                     powershell.Commands = command;
                     powershell.Invoke();
                     if (powershell.Streams.Error.Count > 0)
