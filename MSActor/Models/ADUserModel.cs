@@ -34,6 +34,7 @@ namespace MSActor.Models
         public string ipphone = null;
         public string msExchHideFromAddressList = null;
         public bool changepasswordatlogon = false;
+        public string desfireCardNumber = null;
         
         public bool enabled = false;
         public string accountPassword;
@@ -43,14 +44,15 @@ namespace MSActor.Models
             string displayname, string employeeid, string givenname, string officephone, string initials, 
             string office, string postalcode, string samaccountname, string state, string streetaddress, 
             string surname, string title, string userprincipalname, string path, string ipphone, 
-            string msExchHideFromAddressList, string changepasswordatlogon, string enabled, string type, string accountPassword)
+            string msExchHideFromAddressList, string changepasswordatlogon, string enabled, string type, 
+            string accountPassword, string desfireCardNumber)
         {
             string LogMessage = "NewADUser|name: " + name + "|city: " + city + "|department: " + department + "|description: " + description + "|" +
             "displayname: " + displayname + "|employeeid: " + employeeid + "|givenname: " + givenname + "|officephone: " + officephone +
             "|initials: " + initials + "|office: " + office + "|postalcode: " + postalcode + "|samaccountname: " + samaccountname + "|state: " + state
             + "|streetaddress: " + streetaddress + "|surname: " + surname + "|title: " + title + "|type: " + type + "|userprincipalname: " +
             userprincipalname + "|path: " + path + "|ipphone: " + ipphone + "|msExchHideFromAddressList: " + msExchHideFromAddressList +
-            "|changepasswordatlogon: " + changepasswordatlogon + "|enabled: " + enabled;
+            "|changepasswordatlogon: " + changepasswordatlogon + "|enabled: " + enabled + "|desfireCardNumber: " + desfireCardNumber;
             UtilityController util = new UtilityController();
             util.LogMessage(LogMessage);
             if (name != "")
@@ -124,7 +126,8 @@ namespace MSActor.Models
                 this.accountPassword = accountPassword;
             if (type != "")
                 this.type = type;
-
+            if (desfireCardNumber != "")
+                this.desfireCardNumber = desfireCardNumber;
             
         }
 
@@ -149,6 +152,7 @@ namespace MSActor.Models
             toReturn += "surname = " + surname + ", ";
             toReturn += "title = " + title + ", ";
             toReturn += "userprincipalname = " + userprincipalname + ", ";
+            toReturn += "desfireCardNumber = " + desfireCardNumber + ", ";
             return toReturn;
         }
     }
