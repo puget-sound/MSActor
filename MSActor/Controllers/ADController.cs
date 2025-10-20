@@ -65,6 +65,7 @@ namespace MSActor.Controllers
             string searchChangePasswordAtLogon = "";
 
             string searchEnabled = "";
+            string searchDesfireCardNumber = "";
 
             try
             {
@@ -124,11 +125,14 @@ namespace MSActor.Controllers
                         /*if (ob.Properties["ipphone"].Value != null)
                             searchIPPhone = ob.Properties["ipphone"].Value.ToString();*/
 
+                        if (ob.Properties["DesfireCardNumber"].Value != null)
+                            searchDesfireCardNumber = ob.Properties["DesfireCardNumber"].Value.ToString();
+
                         ADUserModel toReturn = new ADUserModel(searchCity, searchName, searchDepartment,
                             searchDescription, searchDisplayName, searchEmployeeID, searchGivenName, searchOfficePhone,
                             searchInitials, searchOffice, searchPostalCode, searchSamAccountName, searchState,
                             searchStreetAddress, searchSurname, searchTitle, searchUserPrincipalName, searchPath, searchIPPhone,
-                            searchMSExchHideFromAddressList, searchChangePasswordAtLogon, searchEnabled, searchType, "");
+                            searchMSExchHideFromAddressList, searchChangePasswordAtLogon, searchEnabled, searchType, "", searchDesfireCardNumber);
                         return toReturn;
                     }
                     else
@@ -197,12 +201,13 @@ namespace MSActor.Controllers
                     command.AddParameter("type", user.type);
                     command.AddParameter("userprincipalname", user.userprincipalname);
                     command.AddParameter("path", user.path);
-                    if (user.ipphone != null)
+                    if (user.ipphone != null || user.desfireCardNumber != null)
                     {
-                        Hashtable attrHash = new Hashtable
-                        {
-                            {"ipPhone", user.ipphone }
-                        };
+                        Hashtable attrHash = new Hashtable();
+                        if (user.ipphone != null)
+                            attrHash.Add("ipPhone", user.ipphone);
+                        if (user.desfireCardNumber != null)
+                            attrHash.Add("desfireCardNumber", user.desfireCardNumber);
                         command.AddParameter("OtherAttributes", attrHash);
                     }
                     powershell.Commands = command;
@@ -306,7 +311,7 @@ namespace MSActor.Controllers
                     PSCommand command = new PSCommand();
                     command.AddCommand("Set-ADUser");
                     command.AddParameter("Identity", dName);
-                    if (field.ToLower() == "ipphone")
+                    if (field.ToLower() == "ipphone" || field.ToLower() == "desfirecardnumber")
                     {
                         if (value != null)
                         {
